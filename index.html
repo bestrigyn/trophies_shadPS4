@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -8,31 +8,50 @@
     <style>
         :root { --ps-blue: #00439c; --ps-light-blue: #00aaff; --bg-dark: #0a0a0a; --card-bg: #151515; --text-main: #ffffff; --text-dim: #999; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; }
+        
         .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 30px; }
         .login-placeholder { background: #db4437; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; cursor: pointer; border: none; }
+        
         .upload-zone { text-align: center; margin-bottom: 40px; }
         .btn-upload { background: var(--ps-blue); color: white; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; display: inline-block; }
         #fileInput { display: none; }
         
-        .game-banner { background: var(--card-bg); width: 100%; max-width: 1000px; margin: 0 auto; border-radius: 12px; padding: 20px; display: flex; gap: 20px; align-items: center; cursor: pointer; transition: 0.2s; border: 1px solid #222; box-sizing: border-box; }
+        /* КЛИКАБЕЛЬНАЯ ПАНЕЛЬ */
+        .game-banner { 
+            background: var(--card-bg); 
+            width: 100%; max-width: 1000px; 
+            margin: 0 auto; border-radius: 12px; 
+            padding: 20px; display: flex; gap: 20px; 
+            align-items: center; cursor: pointer; 
+            transition: 0.2s; border: 1px solid #222; 
+            box-sizing: border-box; 
+        }
         .game-banner:hover { background: #1c1c1c; border-color: var(--ps-light-blue); }
         .game-icon { width: 100px; height: 100px; border-radius: 8px; object-fit: cover; background: #333; flex-shrink: 0; }
         
         .game-info-main { flex-grow: 1; }
         .game-title-row { display: flex; justify-content: space-between; align-items: center; }
         .ps4-tag { background: #003791; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        
         .progress-line-container { width: 100%; height: 8px; background: #333; border-radius: 4px; margin: 15px 0; overflow: hidden; }
         .progress-line-fill { height: 100%; background: linear-gradient(90deg, var(--ps-blue), var(--ps-light-blue)); width: 0%; transition: 1s ease-out; }
 
-        #trophySection { max-width: 1000px; margin: 10px auto; display: none; animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        /* СЕКЦИЯ ТРОФЕЕВ */
+        #trophySection { max-width: 1000px; margin: 10px auto; display: none; }
 
-        .trophy-row { background: #1a1a1a; margin-bottom: 4px; padding: 12px 20px; display: flex; align-items: center; gap: 20px; border-radius: 6px; border-left: 4px solid transparent; }
-        .unlocked { border-left-color: #4caf50; background: #1e251e; }
+        .trophy-row { 
+            background: #1a1a1a; margin-bottom: 4px; 
+            padding: 12px 20px; display: flex; 
+            align-items: center; gap: 20px; 
+            border-radius: 6px; 
+        }
+        .unlocked { border-left: 4px solid #4caf50; background: #1e251e; }
         .t-icon { width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0; }
         .t-locked { filter: grayscale(1); opacity: 0.2; }
-        .t-type { font-weight: bold; width: 20px; text-align: center; }
+        
+        .t-type { font-weight: bold; width: 25px; text-align: center; }
         .type-B { color: #cd7f32; } .type-S { color: #c0c0c0; } .type-G { color: #ffd700; } .type-P { color: #40e0d0; }
+        
         .t-details h4 { margin: 0; font-size: 15px; }
         .t-details p { margin: 3px 0 0; font-size: 12px; color: var(--text-dim); }
     </style>
@@ -45,7 +64,7 @@
     </div>
 
     <div class="upload-zone">
-        <label for="fileInput" class="btn-upload">Выбрать Update.zip</label>
+        <label for="fileInput" class="btn-upload">Загрузить Update.zip</label>
         <input type="file" id="fileInput" accept=".zip">
     </div>
 
@@ -53,16 +72,16 @@
     <div id="trophySection"></div>
 
     <script>
-        // Функция переключения списка (Открыть/Закрыть)
+        // Функция для сворачивания/разворачивания
         function toggleTrophies() {
             const section = document.getElementById('trophySection');
             const hint = document.getElementById('clickHint');
             if (section.style.display === 'block') {
                 section.style.display = 'none';
-                hint.innerText = 'Нажми, чтобы развернуть список';
+                hint.innerText = 'Нажми, чтобы развернуть';
             } else {
                 section.style.display = 'block';
-                hint.innerText = 'Нажми, чтобы скрыть список';
+                hint.innerText = 'Нажми, чтобы скрыть';
             }
         }
 
@@ -71,43 +90,45 @@
             if (!file) return;
 
             const zip = await JSZip.loadAsync(file);
-            let tropXml = null, gameIcon = null, tIcons = {};
+            let tropXml = null, tIcons = {};
 
             for (let path in zip.files) {
                 const entry = zip.files[path];
-                if (path.toLowerCase().endsWith('trop.xml')) tropXml = await entry.async("string");
-                if (path.toLowerCase().endsWith('icon0.png')) {
-                    const blob = await entry.async("blob");
-                    gameIcon = URL.createObjectURL(blob);
+                // Ищем XML
+                if (path.toLowerCase().endsWith('trop.xml')) {
+                    tropXml = await entry.async("string");
                 }
-                if (path.includes('/Icons/') && path.toLowerCase().endsWith('.png')) {
+                // Ищем все иконки (включая TROP000.PNG)
+                if (path.toLowerCase().endsWith('.png')) {
                     const blob = await entry.async("blob");
                     const name = path.split('/').pop().toUpperCase();
                     tIcons[name] = URL.createObjectURL(blob);
                 }
             }
 
-            if (tropXml) renderGame(tropXml, gameIcon, tIcons);
+            if (tropXml) renderGame(tropXml, tIcons);
         });
 
-        async function renderGame(xmlStr, localIcon, icons) {
+        function renderGame(xmlStr, icons) {
             const parser = new DOMParser();
             const xml = parser.parseFromString(xmlStr, "text/xml");
-            const title = xml.querySelector('title-name')?.textContent || "Unknown Game";
+            const title = xml.querySelector('title-name')?.textContent || "Игра";
             const trophies = xml.querySelectorAll('trophy');
             let unlocked = 0, trophyHtml = '';
 
             trophies.forEach(t => {
                 const id = t.getAttribute('id');
                 const isWin = t.getAttribute('unlockstate') === "true";
+                const type = t.getAttribute('ttype');
                 if (isWin) unlocked++;
+
                 const tIcon = icons[`TROP${id}.PNG`] || "";
                 trophyHtml += `
                     <div class="trophy-row ${isWin ? 'unlocked' : ''}">
                         <img src="${tIcon}" class="t-icon ${isWin ? '' : 't-locked'}">
-                        <div class="t-type type-${t.getAttribute('ttype')}">${t.getAttribute('ttype')}</div>
+                        <div class="t-type type-${type}">${type}</div>
                         <div class="t-details">
-                            <h4>${name = t.querySelector('name').textContent}</h4>
+                            <h4>${t.querySelector('name').textContent}</h4>
                             <p>${t.querySelector('detail').textContent}</p>
                         </div>
                     </div>`;
@@ -115,12 +136,12 @@
 
             const percent = Math.round((unlocked / trophies.length) * 100);
             
-            // Если интернет-иконка не сработала, используем ту, что нашли в ZIP
-            const finalIcon = localIcon || `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=00439c&color=fff&size=100`;
+            // ГЛАВНАЯ ПОДСКАЗКА: Берем TROP000.PNG для обложки!
+            const gameCover = icons['TROP000.PNG'] || icons['ICON0.PNG'] || `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=00439c&color=fff`;
 
             document.getElementById('mainContent').innerHTML = `
                 <div class="game-banner" onclick="toggleTrophies()">
-                    <img src="${finalIcon}" class="game-icon" onerror="this.src='https://via.placeholder.com/100?text=PS'">
+                    <img src="${gameCover}" class="game-icon">
                     <div class="game-info-main">
                         <div class="game-title-row">
                             <h3>${title}</h3>
@@ -132,11 +153,11 @@
                         <div class="progress-line-container">
                             <div class="progress-line-fill" style="width: ${percent}%"></div>
                         </div>
-                        <small id="clickHint" style="color:var(--ps-light-blue)">Нажми, чтобы развернуть список</small>
+                        <small id="clickHint" style="color:var(--ps-light-blue)">Нажми, чтобы развернуть</small>
                     </div>
                 </div>`;
             document.getElementById('trophySection').innerHTML = trophyHtml;
-            document.getElementById('trophySection').style.display = 'none';
+            document.getElementById('trophySection').style.display = 'none'; // Изначально скрыто
         }
     </script>
 </body>
