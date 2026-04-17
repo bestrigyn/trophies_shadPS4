@@ -1,0 +1,263 @@
+import os
+
+# Define the HTML content for the Trophy Tracker
+html_content = """<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sema Trophy Tracker | Личный кабинет</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --ps-blue: #00439c;
+            --bg-dark: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --text-main: #e0e0e0;
+            --text-dim: #888;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--ps-blue);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--ps-blue); }
+
+        .upload-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px dashed #333;
+            margin-bottom: 30px;
+        }
+
+        #fileInput { display: none; }
+        .btn {
+            background: var(--ps-blue);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .game-header { display: flex; justify-content: space-between; align-items: flex-end; }
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ps-blue), #00aaff);
+            border-radius: 5px;
+            width: 0%;
+            transition: 1s ease-in-out;
+        }
+
+        .trophy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .trophy-item {
+            background: #252525;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            position: relative;
+        }
+
+        .trophy-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        /* Тот самый эффект для закрытых трофеев */
+        .locked {
+            filter: grayscale(100%);
+            opacity: 0.4;
+        }
+
+        .trophy-info h4 { margin: 0 0 5px 0; font-size: 14pt; }
+        .trophy-info p { margin: 0; font-size: 10pt; color: var(--text-dim); }
+        .timestamp {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 9pt;
+            color: var(--ps-blue);
+        }
+
+        #loginBtn { background: #db4437; } /* Google Red */
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Sema Trophy Tracker</h1>
+        <div class="user-info" id="authSection">
+            <button class="btn" id="loginBtn">Войти через Google</button>
+        </div>
+    </div>
+
+    <div class="upload-section">
+        <h3>Загрузи Update.zip с трофеями</h3>
+        <p>Сайт автоматически найдет TROP.XML и обновит статистику</p>
+        <label for="fileInput" class="btn">Выбрать ZIP-архив</label>
+        <input type="file" id="fileInput" accept=".zip">
+    </div>
+
+    <div id="gameDisplay"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ТВОЙ КОНФИГ ИЗ FIREBASE CONSOLE ВСТАВЛЯТЬ СЮДА
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Логика входа
+        document.getElementById('loginBtn').onclick = () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).then((result) => {
+                location.reload();
+            });
+        };
+
+        // Логика парсинга ZIP
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const zip = await JSZip.loadAsync(file);
+            let tropXmlContent = null;
+            let iconFiles = {};
+
+            // Ищем XML и иконки в архиве
+            for (let path in zip.files) {
+                if (path.endsWith('TROP.XML')) {
+                    tropXmlContent = await zip.files[path].async("string");
+                }
+                if (path.includes('/Icons/') && path.endsWith('.PNG')) {
+                    const blob = await zip.files[path].async("blob");
+                    const iconName = path.split('/').pop();
+                    iconFiles[iconName] = URL.createObjectURL(blob);
+                }
+            }
+
+            if (tropXmlContent) {
+                parseTrophyXml(tropXmlContent, iconFiles);
+            } else {
+                alert("TROP.XML не найден в архиве!");
+            }
+        });
+
+        function parseTrophyXml(xmlString, icons) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+            
+            const gameTitle = xmlDoc.querySelector('title-name')?.textContent || "Неизвестная игра";
+            const trophies = xmlDoc.querySelectorAll('trophy');
+            
+            let unlockedCount = 0;
+            let html = `
+                <div class="game-card">
+                    <div class="game-header">
+                        <h2>${gameTitle}</h2>
+                        <span id="percentText">0%</span>
+                    </div>
+                    <div class="progress-container"><div class="progress-bar" id="pBar"></div></div>
+                    <div class="trophy-grid">
+            `;
+
+            trophies.forEach(t => {
+                const id = t.getAttribute('id');
+                const isUnlocked = t.getAttribute('unlockstate') === "true";
+                const name = t.querySelector('name').textContent;
+                const detail = t.querySelector('detail').textContent;
+                const timestamp = t.getAttribute('timestamp');
+                
+                if (isUnlocked) unlockedCount++;
+
+                // Пытаемся найти иконку TROPxxx.PNG
+                const iconKey = `TROP${id}.PNG`;
+                const iconSrc = icons[iconKey] || "https://via.placeholder.com/60?text=PS";
+
+                html += `
+                    <div class="trophy-item">
+                        <img src="${iconSrc}" class="trophy-icon ${isUnlocked ? '' : 'locked'}">
+                        <div class="trophy-info">
+                            <h4>${name}</h4>
+                            <p>${detail}</p>
+                        </div>
+                        ${isUnlocked ? `<div class="timestamp">Открыто</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            document.getElementById('gameDisplay').innerHTML = html;
+
+            // Обновляем прогресс
+            const percent = Math.round((unlockedCount / trophies.length) * 100);
+            setTimeout(() => {
+                document.getElementById('pBar').style.width = percent + "%";
+                document.getElementById('percentText').innerText = percent + "%";
+            }, 100);
+        }
+    </script>
+</body>
+</html>"""
+
+# Writing the HTML to a file
+file_path = "index.html"
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"File created: {file_path}")
