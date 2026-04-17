@@ -22,7 +22,7 @@
         .game-icon { width: 120px; height: 120px; border-radius: 10px; object-fit: cover; background: #000; }
         .progress-line-container { width: 100%; height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; margin: 15px 0; overflow: hidden; }
         .progress-line-fill { height: 100%; background: #00aaff; transition: 1s; }
-        #trophySection { max-width: 1000px; margin: 20px auto; display: none; }
+        #trophySection { max-width: 1000px; margin: 20px auto; display: none; color: #ccc; }
         .trophy-row { background: #1a1a1a; margin-bottom: 6px; padding: 15px; display: flex; align-items: center; gap: 20px; border-radius: 8px; border-left: 5px solid #333; }
         .unlocked { border-left: 5px solid #4caf50; background: #1e251e; }
         .t-icon { width: 50px; height: 50px; border-radius: 5px; background: #000; }
@@ -31,7 +31,7 @@
 <body>
 
     <div class="top-nav">
-        <h2>🏆 Trophy Tracker shadps4</h2>
+        <h2>🏆 Trophy Tracker</h2>
         <button id="authBtn" class="login-btn" onclick="handleAuthClick()">Войти</button>
     </div>
 
@@ -72,19 +72,21 @@
             }
         });
 
-        // ЗАГРУЗКА ИЗ ОБЛАКА
         async function loadData() {
             if (!userUid) return;
-            const snap = await getDoc(doc(db, "users", userUid));
-            if (snap.exists()) {
-                const d = snap.data();
-                renderUI(d.game, d.perc, d.stat, d.imgBase64, d.fullHtml);
-            }
+            try {
+                const snap = await getDoc(doc(db, "users", userUid));
+                if (snap.exists()) {
+                    const d = snap.data();
+                    renderUI(d.game || "Неизвестная игра", d.perc || 0, d.stat || "0/0", d.imgBase64 || "", d.fullHtml || "Список пуст");
+                }
+            } catch (err) { console.error("Ошибка загрузки:", err); }
         }
 
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            
             const zip = await JSZip.loadAsync(file);
             let xml = null, icons = {}, mainIconBase64 = "";
 
@@ -112,40 +114,48 @@
                 const id = 'TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG';
                 html += `<div class="trophy-row ${isW ? 'unlocked' : ''}">
                     <img src="${icons[id] || ''}" class="t-icon">
-                    <div><h4>${t.querySelector('name').textContent}</h4><p>${t.querySelector('detail').textContent}</p></div>
+                    <div><h4 style="margin:0;">${t.querySelector('name').textContent}</h4><p style="margin:5px 0 0; font-size:13px; opacity:0.7;">${t.querySelector('detail').textContent}</p></div>
                 </div>`;
             });
 
             const p = Math.round((win / trops.length) * 100);
             const statStr = `${win}/${trops.length}`;
 
-            // СОХРАНЯЕМ ВСЁ В БАЗУ, ВКЛЮЧАЯ ГОТОВЫЙ HTML
-            if (userUid) {
-                await setDoc(doc(db, "users", userUid), { 
-                    game: title, perc: p, stat: statStr, 
-                    imgBase64: mainIconBase64, fullHtml: html 
-                });
-            }
+            // Сначала рисуем, чтобы не было undefined
             renderUI(title, p, statStr, mainIconBase64, html);
+
+            // Потом сохраняем в базу
+            if (userUid) {
+                try {
+                    await setDoc(doc(db, "users", userUid), { 
+                        game: title, perc: p, stat: statStr, 
+                        imgBase64: mainIconBase64, fullHtml: html 
+                    });
+                } catch (err) { alert("Ошибка сохранения в базу! Проверь правила Firestore."); }
+            }
         }
 
         function renderUI(title, p, stat, icon, html) {
-            document.getElementById('mainContent').innerHTML = `
-                <div class="game-banner" onclick="toggleTrophies()">
-                    <img src="${icon}" class="game-icon">
-                    <div class="game-info">
+            const mainContent = document.getElementById('mainContent');
+            const trophySection = document.getElementById('trophySection');
+
+            mainContent.innerHTML = `
+                <div class="game-banner" id="bannerBtn">
+                    <img src="${icon || 'https://www.playstation.com/content/dam/global_assets/ps-logo.png'}" class="game-icon">
+                    <div style="flex-grow:1;">
                         <h2 style="margin:0;">${title}</h2>
                         <div class="progress-line-container"><div class="progress-line-fill" style="width:${p}%"></div></div>
                         <strong>${p}% — Трофеи: ${stat}</strong>
                     </div>
                 </div>`;
-            document.getElementById('trophySection').innerHTML = html;
+            
+            trophySection.innerHTML = html || "Список трофеев пуст.";
+            
+            // Назначаем клик заново после перерисовки
+            document.getElementById('bannerBtn').onclick = () => {
+                trophySection.style.display = trophySection.style.display === 'block' ? 'none' : 'block';
+            };
         }
-
-        window.toggleTrophies = () => {
-            const s = document.getElementById('trophySection');
-            s.style.display = s.style.display === 'block' ? 'none' : 'block';
-        };
     </script>
 </body>
 </html>
