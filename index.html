@@ -24,7 +24,7 @@
         }
         .game-icon { width: 120px; height: 120px; border-radius: 10px; object-fit: cover; background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .progress-line-container { width: 100%; height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; margin: 15px 0; overflow: hidden; }
-        .progress-line-fill { height: 100%; background: #00aaff; width: 0%; transition: 1s; box-shadow: 0 0 10px #00aaff; }
+        .progress-line-fill { height: 100%; background: #00aaff; width: 0%; transition: 1s; }
         #trophySection { max-width: 1000px; margin: 20px auto; display: none; }
         .trophy-row { background: #1a1a1a; margin-bottom: 6px; padding: 15px; display: flex; align-items: center; gap: 20px; border-radius: 8px; }
         .unlocked { border-left: 5px solid #4caf50; background: #1e251e; }
@@ -53,13 +53,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
             authDomain: "bestrigyn-1d1c5.firebaseapp.com",
             projectId: "bestrigyn-1d1c5",
-            storageBucket: "bestrigyn-1d1c5.appspot.com", // ПРОВЕРЬ ЭТОТ ПУНКТ В КОНСОЛИ!
+            storageBucket: "bestrigyn-1d1c5.firebasestorage.app",
             messagingSenderId: "967145662050",
             appId: "1:967145662050:web:c03ed7463c51105d7bd33b"
         };
@@ -67,7 +66,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
         let userUid = null;
 
         window.handleAuthClick = () => {
@@ -91,17 +89,14 @@
         });
 
         async function loadData() {
+            if (!userUid) return;
             const snap = await getDoc(doc(db, "users", userUid));
             if (snap.exists()) {
                 const d = snap.data();
-                let imgUrl = "https://www.playstation.com/content/dam/global_assets/ps-logo.png";
-                try {
-                    imgUrl = await getDownloadURL(ref(storage, `icons/${userUid}_main.png`));
-                } catch (e) { console.log("Иконка еще не загружена в облако"); }
-
+                const icon = d.imgBase64 || "https://www.playstation.com/content/dam/global_assets/ps-logo.png";
                 document.getElementById('mainContent').innerHTML = `
-                    <div class="game-banner" onclick="alert('Для детального списка трофеев загрузите ZIP еще раз')">
-                        <img src="${imgUrl}" class="game-icon">
+                    <div class="game-banner" onclick="alert('Загрузите ZIP для просмотра трофеев')">
+                        <img src="${icon}" class="game-icon">
                         <div class="game-info-main">
                             <h2 style="margin:0;">${d.game}</h2>
                             <div class="progress-line-container"><div class="progress-line-fill" style="width:${d.perc}%"></div></div>
@@ -115,21 +110,21 @@
             const file = e.target.files[0];
             if (!file) return;
             const zip = await JSZip.loadAsync(file);
-            let xml = null, icons = {}, mainIconBlob = null;
+            let xml = null, icons = {}, mainIconBase64 = "";
 
             for (let p in zip.files) {
                 if (p.toLowerCase().endsWith('trop.xml')) xml = await zip.files[p].async("string");
                 if (p.toLowerCase().endsWith('.png')) {
-                    const b = await zip.files[p].async("blob");
+                    const b = await zip.files[p].async("base64");
                     const name = p.split('/').pop().toUpperCase();
-                    icons[name] = URL.createObjectURL(b);
-                    if (name === 'TROP000.PNG') mainIconBlob = b;
+                    icons[name] = "data:image/png;base64," + b;
+                    if (name === 'TROP000.PNG') mainIconBase64 = icons[name];
                 }
             }
-            if (xml) render(xml, icons, mainIconBlob);
+            if (xml) render(xml, icons, mainIconBase64);
         });
 
-        async function render(xmlStr, icons, mainIconBlob) {
+        async function render(xmlStr, icons, mainIconBase64) {
             const docXml = new DOMParser().parseFromString(xmlStr, "text/xml");
             const title = docXml.querySelector('title-name')?.textContent || "Game";
             const trops = docXml.querySelectorAll('trophy');
@@ -146,21 +141,19 @@
             });
 
             const p = Math.round((win / trops.length) * 100);
-            
-            // Сохраняем иконку в Storage
-            if (userUid && mainIconBlob) {
-                const sRef = ref(storage, `icons/${userUid}_main.png`);
-                await uploadBytes(sRef, mainIconBlob);
-            }
 
-            // Сохраняем текст в Firestore
             if (userUid) {
-                await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: `${win}/${trops.length}` });
+                await setDoc(doc(db, "users", userUid), { 
+                    game: title, 
+                    perc: p, 
+                    stat: `${win}/${trops.length}`,
+                    imgBase64: mainIconBase64 // СОХРАНЯЕМ КАРТИНКУ ПРЯМО В ТЕКСТ В БАЗУ
+                });
             }
 
             document.getElementById('mainContent').innerHTML = `
                 <div class="game-banner" onclick="document.getElementById('trophySection').style.display='block'">
-                    <img src="${icons['TROP000.PNG'] || ''}" class="game-icon">
+                    <img src="${mainIconBase64}" class="game-icon">
                     <div class="game-info-main"><h2>${title}</h2><div class="progress-line-container"><div class="progress-line-fill" style="width:${p}%"></div></div><strong>${p}%</strong></div>
                 </div>`;
             document.getElementById('trophySection').innerHTML = html;
