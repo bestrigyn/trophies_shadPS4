@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Trophy Tracker — FIX</title>
+    <title>Trophy Tracker shadps4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --ps-blue: #00439c; --bg-dark: #0a0a0a; --text: #fff; }
@@ -14,15 +14,13 @@
         .progress-bar { width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: #00aaff; width: 0%; transition: 0.5s; }
         #trophyList { max-width: 800px; margin: 0 auto; display: none; text-align: left; }
-        .t-row { background: #1a1a1a; padding: 10px; margin-bottom: 5px; border-radius: 6px; display: flex; align-items: center; gap: 15px; border-left: 4px solid #333; }
-        .unlocked { border-left-color: #4caf50; background: #1e251e; }
     </style>
 </head>
 <body>
 
     <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto;">
         <h2>🏆 Trophy Tracker</h2>
-        <button id="authBtn" class="btn" onclick="handleAuthClick()">Войти</button>
+        <button id="authBtn" class="btn" onclick="handleAuthClick()">Войти через Google</button>
     </div>
 
     <label for="fileInput" class="btn">📥 Загрузить Update.zip</label>
@@ -46,6 +44,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // ТВОИ НАСТРОЙКИ FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
             authDomain: "bestrigyn-1d1c5.firebaseapp.com",
@@ -60,27 +59,31 @@
         const db = getFirestore(app);
         let userUid = null;
 
-        window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => console.error(e));
+        // Функция входа
+        window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
 
+        // Следим за входом пользователя
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userUid = user.uid;
                 document.getElementById('authBtn').innerText = user.displayName;
-                loadData();
+                loadData(); // Грузим данные из облака сразу после входа
             }
         });
 
+        // Загрузка данных из Firebase
         async function loadData() {
             if (!userUid) return;
             try {
                 const snap = await getDoc(doc(db, "users", userUid));
                 if (snap.exists()) {
                     const d = snap.data();
-                    updateUI(d.game, d.perc, d.stat, d.img, d.html);
+                    updateUI(d.game || "Без названия", d.perc || 0, d.stat || "0/0", d.img || "", d.html || "Список пуст");
                 }
             } catch (e) { console.error("Ошибка загрузки:", e); }
         }
 
+        // Обработка ZIP файла
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file || !userUid) return;
@@ -108,9 +111,9 @@
                     const isW = t.getAttribute('unlockstate') === "true";
                     if (isW) win++;
                     const id = 'TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG';
-                    html += `<div class="t-row ${isW ? 'unlocked' : ''}">
-                        <img src="${icons[id] || ''}" style="width:40px;height:40px;border-radius:4px;">
-                        <div><b style="display:block">${t.querySelector('name').textContent}</b><small style="opacity:0.6">${t.querySelector('detail').textContent}</small></div>
+                    html += `<div class="t-row ${isW ? 'unlocked' : ''}" style="display:flex; align-items:center; gap:10px; margin-bottom:5px; background:#1a1a1a; padding:10px; border-radius:8px;">
+                        <img src="${icons[id] || ''}" style="width:50px; height:50px; border-radius:4px;">
+                        <div><b>${t.querySelector('name').textContent}</b><br><small>${t.querySelector('detail').textContent}</small></div>
                     </div>`;
                 });
 
@@ -119,25 +122,32 @@
 
                 updateUI(title, p, st, mainImg, html);
                 
-                await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: st, img: mainImg, html: html });
+                // СОХРАНЯЕМ В ОБЛАКО
+                await setDoc(doc(db, "users", userUid), { 
+                    game: title, perc: p, stat: st, img: mainImg, html: html 
+                });
+                alert("Данные сохранены в облако!");
             }
         });
 
+        // Функция обновления экрана
         function updateUI(title, p, st, img, html) {
             document.getElementById('gTitle').innerText = title;
             document.getElementById('gFill').style.width = p + "%";
-            document.getElementById('gStat').innerText = `${p}% — Трофеи: ${st}`;
+            document.getElementById('gStat').innerText = p + "% — Трофеи: " + st;
+            const iconEl = document.getElementById('gIcon');
             if (img) {
-                const iconEl = document.getElementById('gIcon');
                 iconEl.src = img;
                 iconEl.style.display = 'block';
             }
-            document.getElementById('trophyList').innerHTML = html;
+            const list = document.getElementById('trophyList');
+            list.innerHTML = html || "Список пуст";
         }
 
+        // Показ/скрытие списка по клику на баннер
         document.getElementById('bannerBtn').onclick = () => {
             const list = document.getElementById('trophyList');
-            list.style.display = list.style.display === 'block' ? 'none' : 'block';
+            list.style.display = (list.style.display === 'none' || list.style.display === '') ? 'block' : 'none';
         };
     </script>
 </body>
