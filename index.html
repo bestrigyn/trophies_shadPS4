@@ -10,23 +10,15 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; }
         
         .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 30px; }
-        .login-placeholder { background: #db4437; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; cursor: pointer; border: none; }
+        .login-btn { background: #db4437; color: white; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; font-weight: bold; }
         
         .upload-zone { text-align: center; margin-bottom: 40px; }
-        .btn-upload { background: var(--ps-blue); color: white; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; display: inline-block; }
+        .btn-upload { background: var(--ps-blue); color: white; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; display: inline-block; transition: 0.3s; }
+        .btn-upload:hover { background: var(--ps-light-blue); }
         #fileInput { display: none; }
         
-        /* КЛИКАБЕЛЬНАЯ ПАНЕЛЬ */
-        .game-banner { 
-            background: var(--card-bg); 
-            width: 100%; max-width: 1000px; 
-            margin: 0 auto; border-radius: 12px; 
-            padding: 20px; display: flex; gap: 20px; 
-            align-items: center; cursor: pointer; 
-            transition: 0.2s; border: 1px solid #222; 
-            box-sizing: border-box; 
-        }
-        .game-banner:hover { background: #1c1c1c; border-color: var(--ps-light-blue); }
+        .game-banner { background: var(--card-bg); width: 100%; max-width: 1000px; margin: 0 auto; border-radius: 12px; padding: 20px; display: flex; gap: 20px; align-items: center; cursor: pointer; transition: 0.2s; border: 1px solid #222; box-sizing: border-box; }
+        .game-banner:hover { border-color: var(--ps-light-blue); background: #1c1c1c; }
         .game-icon { width: 100px; height: 100px; border-radius: 8px; object-fit: cover; background: #333; flex-shrink: 0; }
         
         .game-info-main { flex-grow: 1; }
@@ -36,22 +28,13 @@
         .progress-line-container { width: 100%; height: 8px; background: #333; border-radius: 4px; margin: 15px 0; overflow: hidden; }
         .progress-line-fill { height: 100%; background: linear-gradient(90deg, var(--ps-blue), var(--ps-light-blue)); width: 0%; transition: 1s ease-out; }
 
-        /* СЕКЦИЯ ТРОФЕЕВ */
         #trophySection { max-width: 1000px; margin: 10px auto; display: none; }
-
-        .trophy-row { 
-            background: #1a1a1a; margin-bottom: 4px; 
-            padding: 12px 20px; display: flex; 
-            align-items: center; gap: 20px; 
-            border-radius: 6px; 
-        }
+        .trophy-row { background: #1a1a1a; margin-bottom: 4px; padding: 12px 20px; display: flex; align-items: center; gap: 20px; border-radius: 6px; }
         .unlocked { border-left: 4px solid #4caf50; background: #1e251e; }
         .t-icon { width: 48px; height: 48px; border-radius: 4px; flex-shrink: 0; }
         .t-locked { filter: grayscale(1); opacity: 0.2; }
-        
         .t-type { font-weight: bold; width: 25px; text-align: center; }
         .type-B { color: #cd7f32; } .type-S { color: #c0c0c0; } .type-G { color: #ffd700; } .type-P { color: #40e0d0; }
-        
         .t-details h4 { margin: 0; font-size: 15px; }
         .t-details p { margin: 3px 0 0; font-size: 12px; color: var(--text-dim); }
     </style>
@@ -60,7 +43,7 @@
 
     <div class="top-nav">
         <h2>Trophy Tracker shadps4</h2>
-        <button class="login-placeholder">Войти через Google</button>
+        <button id="authBtn" class="login-btn">Войти через Google</button>
     </div>
 
     <div class="upload-zone">
@@ -71,19 +54,46 @@
     <div id="mainContent"></div>
     <div id="trophySection"></div>
 
-    <script>
-        // Функция для сворачивания/разворачивания
-        function toggleTrophies() {
-            const section = document.getElementById('trophySection');
-            const hint = document.getElementById('clickHint');
-            if (section.style.display === 'block') {
-                section.style.display = 'none';
-                hint.innerText = 'Нажми, чтобы развернуть';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // ТВОЯ КОНФИГУРАЦИЯ
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
+            authDomain: "bestrigyn-1d1c5.firebaseapp.com",
+            projectId: "bestrigyn-1d1c5",
+            storageBucket: "bestrigyn-1d1c5.firebasestorage.app",
+            messagingSenderId: "967145662050",
+            appId: "1:967145662050:web:c03ed7463c51105d7bd33b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Кнопка входа
+        const authBtn = document.getElementById('authBtn');
+        authBtn.onclick = () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).catch(err => console.error("Ошибка входа:", err));
+        };
+
+        // Следим за статусом входа
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authBtn.innerText = user.displayName;
+                authBtn.style.background = "#4caf50";
             } else {
-                section.style.display = 'block';
-                hint.innerText = 'Нажми, чтобы скрыть';
+                authBtn.innerText = "Войти через Google";
+                authBtn.style.background = "#db4437";
             }
-        }
+        });
+
+        // ЛОГИКА ПАРСИНГА
+        window.toggleTrophies = function() {
+            const section = document.getElementById('trophySection');
+            section.style.display = (section.style.display === 'block') ? 'none' : 'block';
+        };
 
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -94,11 +104,7 @@
 
             for (let path in zip.files) {
                 const entry = zip.files[path];
-                // Ищем XML
-                if (path.toLowerCase().endsWith('trop.xml')) {
-                    tropXml = await entry.async("string");
-                }
-                // Ищем все иконки (включая TROP000.PNG)
+                if (path.toLowerCase().endsWith('trop.xml')) tropXml = await entry.async("string");
                 if (path.toLowerCase().endsWith('.png')) {
                     const blob = await entry.async("blob");
                     const name = path.split('/').pop().toUpperCase();
@@ -112,21 +118,19 @@
         function renderGame(xmlStr, icons) {
             const parser = new DOMParser();
             const xml = parser.parseFromString(xmlStr, "text/xml");
-            const title = xml.querySelector('title-name')?.textContent || "Игра";
+            const title = xml.querySelector('title-name')?.textContent || "Game";
             const trophies = xml.querySelectorAll('trophy');
             let unlocked = 0, trophyHtml = '';
 
             trophies.forEach(t => {
                 const id = t.getAttribute('id');
                 const isWin = t.getAttribute('unlockstate') === "true";
-                const type = t.getAttribute('ttype');
                 if (isWin) unlocked++;
-
                 const tIcon = icons[`TROP${id}.PNG`] || "";
                 trophyHtml += `
                     <div class="trophy-row ${isWin ? 'unlocked' : ''}">
                         <img src="${tIcon}" class="t-icon ${isWin ? '' : 't-locked'}">
-                        <div class="t-type type-${type}">${type}</div>
+                        <div class="t-type type-${t.getAttribute('ttype')}">${t.getAttribute('ttype')}</div>
                         <div class="t-details">
                             <h4>${t.querySelector('name').textContent}</h4>
                             <p>${t.querySelector('detail').textContent}</p>
@@ -135,9 +139,7 @@
             });
 
             const percent = Math.round((unlocked / trophies.length) * 100);
-            
-            // ГЛАВНАЯ ПОДСКАЗКА: Берем TROP000.PNG для обложки!
-            const gameCover = icons['TROP000.PNG'] || icons['ICON0.PNG'] || `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=00439c&color=fff`;
+            const gameCover = icons['TROP000.PNG'] || icons['ICON0.PNG'] || "https://via.placeholder.com/100?text=PS";
 
             document.getElementById('mainContent').innerHTML = `
                 <div class="game-banner" onclick="toggleTrophies()">
@@ -153,11 +155,11 @@
                         <div class="progress-line-container">
                             <div class="progress-line-fill" style="width: ${percent}%"></div>
                         </div>
-                        <small id="clickHint" style="color:var(--ps-light-blue)">Нажми, чтобы развернуть</small>
+                        <small style="color:var(--ps-light-blue)">Нажми на плашку, чтобы скрыть/раскрыть список</small>
                     </div>
                 </div>`;
             document.getElementById('trophySection').innerHTML = trophyHtml;
-            document.getElementById('trophySection').style.display = 'none'; // Изначально скрыто
+            document.getElementById('trophySection').style.display = 'none';
         }
     </script>
 </body>
