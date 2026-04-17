@@ -1,131 +1,144 @@
- <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Trophy Tracker — FIX</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root { --ps-blue: #00439c; --bg-dark: #0a0a0a; --text: #fff; }
+        body { font-family: sans-serif; background: var(--bg-dark); color: var(--text); margin: 0; padding: 20px; text-align: center; }
+        .btn { background: var(--ps-blue); color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: inline-block; margin: 10px; border: none; font-weight: bold; }
+        #fileInput { display: none; }
+        .banner { background: linear-gradient(135deg, #001f4d, #00439c); max-width: 800px; margin: 20px auto; padding: 20px; border-radius: 12px; display: flex; align-items: center; gap: 20px; cursor: pointer; text-align: left; border: 1px solid #333; }
+        .game-icon { width: 80px; height: 80px; border-radius: 8px; background: #000; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: #00aaff; width: 0%; transition: 0.5s; }
+        #trophyList { max-width: 800px; margin: 0 auto; display: none; text-align: left; }
+        .t-row { background: #1a1a1a; padding: 10px; margin-bottom: 5px; border-radius: 6px; display: flex; align-items: center; gap: 15px; border-left: 4px solid #333; }
+        .unlocked { border-left-color: #4caf50; background: #1e251e; }
+    </style>
+</head>
+<body>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
-        authDomain: "bestrigyn-1d1c5.firebaseapp.com",
-        projectId: "bestrigyn-1d1c5",
-        storageBucket: "bestrigyn-1d1c5.firebasestorage.app",
-        messagingSenderId: "967145662050",
-        appId: "1:967145662050:web:c03ed7463c51105d7bd33b"
-    };
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto;">
+        <h2>🏆 Trophy Tracker</h2>
+        <button id="authBtn" class="btn" onclick="handleAuthClick()">Войти</button>
+    </div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let userUid = null;
+    <label for="fileInput" class="btn">📥 Загрузить Update.zip</label>
+    <input type="file" id="fileInput" accept=".zip">
 
-    window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
+    <div id="content">
+        <div class="banner" id="bannerBtn">
+            <img id="gIcon" src="" class="game-icon" style="display:none;">
+            <div style="flex-grow:1;">
+                <h3 id="gTitle" style="margin:0;">Загрузите данные</h3>
+                <div class="progress-bar"><div id="gFill" class="progress-fill"></div></div>
+                <span id="gStat">0% — Трофеи: 0/0</span>
+            </div>
+        </div>
+    </div>
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            userUid = user.uid;
-            document.getElementById('authBtn').innerText = "Аккаунт: " + user.displayName;
-            console.log("Авторизован как:", user.displayName, "UID:", userUid);
-            loadData();
-        }
-    });
+    <div id="trophyList"></div>
 
-    async function loadData() {
-        if (!userUid) return;
-        try {
-            const snap = await getDoc(doc(db, "users", userUid));
-            if (snap.exists()) {
-                const d = snap.data();
-                console.log("Данные успешно загружены из облака для игры:", d.game);
-                renderUI(d.game, d.perc, d.stat, d.imgBase64, d.fullHtml);
-            } else {
-                console.log("В облаке пока нет записей для этого пользователя.");
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
+            authDomain: "bestrigyn-1d1c5.firebaseapp.com",
+            projectId: "bestrigyn-1d1c5",
+            storageBucket: "bestrigyn-1d1c5.firebasestorage.app",
+            messagingSenderId: "967145662050",
+            appId: "1:967145662050:web:c03ed7463c51105d7bd33b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let userUid = null;
+
+        window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => console.error(e));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userUid = user.uid;
+                document.getElementById('authBtn').innerText = user.displayName;
+                loadData();
             }
-        } catch (e) {
-            console.error("Ошибка при чтении данных:", e);
-        }
-    }
-
-    document.getElementById('fileInput').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (!userUid) {
-            alert("Сначала нажми кнопку 'Войти'!");
-            return;
-        }
-
-        const zip = await JSZip.loadAsync(file);
-        let xml = null, icons = {}, mainIconBase64 = "";
-
-        for (let p in zip.files) {
-            if (p.toLowerCase().endsWith('trop.xml')) xml = await zip.files[p].async("string");
-            if (p.toLowerCase().endsWith('.png')) {
-                const b = await zip.files[p].async("base64");
-                const name = p.split('/').pop().toUpperCase();
-                icons[name] = "data:image/png;base64," + b;
-                if (name === 'TROP000.PNG') mainIconBase64 = icons[name];
-            }
-        }
-        if (xml) processXml(xml, icons, mainIconBase64);
-    });
-
-    async function processXml(xmlStr, icons, mainIconBase64) {
-        const docXml = new DOMParser().parseFromString(xmlStr, "text/xml");
-        const title = docXml.querySelector('title-name')?.textContent || "Game";
-        const trops = docXml.querySelectorAll('trophy');
-        let win = 0, html = '';
-
-        trops.forEach(t => {
-            const isW = t.getAttribute('unlockstate') === "true";
-            if (isW) win++;
-            const id = 'TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG';
-            html += `<div class="trophy-row ${isW ? 'unlocked' : ''}">
-                <img src="${icons[id] || ''}" class="t-icon">
-                <div><h4 style="margin:0;">${t.querySelector('name').textContent}</h4><p style="margin:5px 0 0; font-size:13px; opacity:0.7;">${t.querySelector('detail').textContent}</p></div>
-            </div>`;
         });
 
-        const p = Math.round((win / trops.length) * 100);
-        const statStr = `${win}/${trops.length}`;
-
-        // СНАЧАЛА ОТОБРАЖАЕМ НА ЭКРАНЕ (визуальный отклик сразу)
-        renderUI(title, p, statStr, mainIconBase64, html);
-
-        // ТЕПЕРЬ СОХРАНЯЕМ В ОБЛАКО
-        console.log("Запускаю процесс сохранения...");
-        try {
-            await setDoc(doc(db, "users", userUid), { 
-                game: title, 
-                perc: p, 
-                stat: statStr, 
-                imgBase64: mainIconBase64, 
-                fullHtml: html,
-                lastUpdate: new Date().getTime()
-            }, { merge: false }); // merge: false гарантирует полную перезапись старых данных
-            
-            console.log("✅ ОБЛАКО ОБНОВЛЕНО!");
-            alert("Трофеи успешно сохранены в облаке!");
-        } catch (error) {
-            console.error("❌ КРИТИЧЕСКАЯ ОШИБКА ЗАПИСИ:", error.code, error.message);
-            alert("Ошибка записи! Проверь вкладку Rules в консоли Firebase: " + error.message);
+        async function loadData() {
+            if (!userUid) return;
+            try {
+                const snap = await getDoc(doc(db, "users", userUid));
+                if (snap.exists()) {
+                    const d = snap.data();
+                    updateUI(d.game, d.perc, d.stat, d.img, d.html);
+                }
+            } catch (e) { console.error("Ошибка загрузки:", e); }
         }
-    }
 
-    function renderUI(title, p, stat, icon, html) {
-        const mainContent = document.getElementById('mainContent');
-        const trophySection = document.getElementById('trophySection');
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !userUid) return;
 
-        mainContent.innerHTML = `
-            <div class="game-banner" id="bannerBtn">
-                <img src="${icon || 'https://www.playstation.com/content/dam/global_assets/ps-logo.png'}" class="game-icon">
-                <div style="flex-grow:1;">
-                    <h2 style="margin:0;">${title}</h2>
-                    <div class="progress-line-container"><div class="progress-line-fill" style="width:${p}%"></div></div>
-                    <strong>${p}% — Трофеи: ${stat}</strong>
-                </div>
-            </div>`;
-        
-        trophySection.innerHTML = html;
+            const zip = await JSZip.loadAsync(file);
+            let xml = null, icons = {}, mainImg = "";
+
+            for (let name in zip.files) {
+                if (name.toLowerCase().endsWith('trop.xml')) xml = await zip.files[name].async("string");
+                if (name.toLowerCase().endsWith('.png')) {
+                    const b64 = "data:image/png;base64," + await zip.files[name].async("base64");
+                    const fileName = name.split('/').pop().toUpperCase();
+                    icons[fileName] = b64;
+                    if (fileName === 'TROP000.PNG') mainImg = b64;
+                }
+            }
+
+            if (xml) {
+                const dx = new DOMParser().parseFromString(xml, "text/xml");
+                const title = dx.querySelector('title-name')?.textContent || "Game";
+                const trops = dx.querySelectorAll('trophy');
+                let win = 0, html = '';
+
+                trops.forEach(t => {
+                    const isW = t.getAttribute('unlockstate') === "true";
+                    if (isW) win++;
+                    const id = 'TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG';
+                    html += `<div class="t-row ${isW ? 'unlocked' : ''}">
+                        <img src="${icons[id] || ''}" style="width:40px;height:40px;border-radius:4px;">
+                        <div><b style="display:block">${t.querySelector('name').textContent}</b><small style="opacity:0.6">${t.querySelector('detail').textContent}</small></div>
+                    </div>`;
+                });
+
+                const p = Math.round((win / trops.length) * 100);
+                const st = `${win}/${trops.length}`;
+
+                updateUI(title, p, st, mainImg, html);
+                
+                await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: st, img: mainImg, html: html });
+            }
+        });
+
+        function updateUI(title, p, st, img, html) {
+            document.getElementById('gTitle').innerText = title;
+            document.getElementById('gFill').style.width = p + "%";
+            document.getElementById('gStat').innerText = `${p}% — Трофеи: ${st}`;
+            if (img) {
+                const iconEl = document.getElementById('gIcon');
+                iconEl.src = img;
+                iconEl.style.display = 'block';
+            }
+            document.getElementById('trophyList').innerHTML = html;
+        }
+
         document.getElementById('bannerBtn').onclick = () => {
-            trophySection.style.display = trophySection.style.display === 'block' ? 'none' : 'block';
+            const list = document.getElementById('trophyList');
+            list.style.display = list.style.display === 'block' ? 'none' : 'block';
         };
-    }
-</script>
+    </script>
+</body>
+</html>
