@@ -20,25 +20,36 @@
             padding: 15px; 
             border-radius: 10px; 
             text-align: center; 
-            margin-bottom: 20px; 
+            margin-bottom: 35px; /* Хороший отступ до кнопки */
             font-size: 14px;
         }
-        .pc-download a { 
-            color: #00aaff; 
-            text-decoration: none; 
-            font-weight: bold; 
-            border-bottom: 1px solid #00aaff;
-            transition: 0.3s;
-        }
+        .pc-download a { color: #00aaff; text-decoration: none; font-weight: bold; border-bottom: 1px solid #00aaff; transition: 0.3s; }
         .pc-download a:hover { color: #fff; border-bottom-color: #fff; }
 
-        /* КНОПКИ */
-        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        /* КНОПКА ЗАГРУЗКИ */
+        .upload-wrapper { 
+            text-align: center; 
+            margin-bottom: 40px; /* ВОТ ЭТОТ ОТСТУП уберет слипание с баннером майонеза */
+        }
+
+        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; display: inline-block; }
         .btn:hover { opacity: 0.8; }
         .btn-logout { background: #d32f2f; font-size: 12px; padding: 5px 10px; }
 
-        /* БАННЕР */
-        .banner { background: linear-gradient(135deg, #001f4d, #00439c); padding: 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #0056cc; position: relative; overflow: hidden; }
+        /* БАННЕР ТРОФЕЕВ */
+        .banner { 
+            background: linear-gradient(135deg, #001f4d, #00439c); 
+            padding: 25px; 
+            border-radius: 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            cursor: pointer; 
+            border: 1px solid #0056cc; 
+            position: relative; 
+            overflow: hidden;
+            margin-top: 10px; /* Дополнительный зазор сверху */
+        }
         .game-icon { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; z-index: 2; background: #000; border: 2px solid rgba(255,255,255,0.1); }
         .progress-box { flex-grow: 1; z-index: 2; }
         .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; margin: 12px 0; overflow: hidden; }
@@ -75,9 +86,12 @@
         </a>
     </div>
 
-    <center>
-        <label class="btn" style="margin-bottom: 20px;">📂 Загрузить Update.zip <input type="file" id="fileInput" accept=".zip" hidden></label>
-    </center>
+    <div class="upload-wrapper">
+        <label class="btn">
+            📂 Загрузить Update.zip 
+            <input type="file" id="fileInput" accept=".zip" hidden>
+        </label>
+    </div>
 
     <div class="banner" id="mainBanner">
         <img id="gameIcon" src="" class="game-icon" style="display:none">
@@ -92,6 +106,7 @@
 </div>
 
 <script type="module">
+    // Твой JS код остается без изменений, он работает отлично
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -110,7 +125,6 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // --- IndexedDB для хранения картинок ---
     const openDB = () => {
         return new Promise((res) => {
             const req = indexedDB.open("TrophyCache", 1);
@@ -132,7 +146,6 @@
         });
     };
 
-    // --- Логика Аутентификации ---
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
     window.handleLogout = () => signOut(auth).then(() => location.reload());
 
@@ -160,10 +173,8 @@
     document.getElementById('fileInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file || !userUid) return;
-
         const zip = await JSZip.loadAsync(file);
         let xmlData = null, icons = {};
-
         for (let path in zip.files) {
             const name = path.split('/').pop().toUpperCase();
             if (name === 'TROP.XML') xmlData = await zip.files[path].async("string");
@@ -171,32 +182,23 @@
                 icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
             }
         }
-
         if (xmlData) {
             const xml = new DOMParser().parseFromString(xmlData, "text/xml");
             const title = xml.querySelector('title-name')?.textContent || "Game";
             const trophies = xml.querySelectorAll('trophy');
             let earned = 0, html = '';
-
             trophies.forEach(t => {
                 const won = t.getAttribute('unlockstate') === "true";
                 if (won) earned++;
                 const img = icons['TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG'] || "";
-                html += `
-                <div class="t-card ${won ? 'won' : ''}">
-                    <img src="${img}" class="t-img">
-                    <div class="t-info"><b>${t.querySelector('name').textContent}</b><small>${t.querySelector('detail').textContent}</small></div>
-                </div>`;
+                html += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div class="t-info"><b>${t.querySelector('name').textContent}</b><small>${t.querySelector('detail').textContent}</small></div></div>`;
             });
-
             const p = Math.round((earned / trophies.length) * 100);
             const st = `${earned}/${trophies.length}`;
             const mainIcon = icons['TROP000.PNG'] || "";
-
             await saveImg("main_icon", mainIcon);
             await saveImg("html_list", html);
             await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: st });
-
             updateUI(title, p, st, mainIcon, html);
         }
     });
