@@ -13,6 +13,25 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); padding: 15px 25px; border-radius: 12px; border: 1px solid #333; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         
+        /* ПЛАШКА ССЫЛКИ НА ПК-ВЕРСИЮ */
+        .pc-download { 
+            background: #1a1a1a; 
+            border: 1px dashed #00aaff; 
+            padding: 15px; 
+            border-radius: 10px; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            font-size: 14px;
+        }
+        .pc-download a { 
+            color: #00aaff; 
+            text-decoration: none; 
+            font-weight: bold; 
+            border-bottom: 1px solid #00aaff;
+            transition: 0.3s;
+        }
+        .pc-download a:hover { color: #fff; border-bottom-color: #fff; }
+
         /* КНОПКИ */
         .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn:hover { opacity: 0.8; }
@@ -46,6 +65,14 @@
             <button id="authBtn" class="btn" onclick="handleAuthClick()">Войти</button>
             <button id="logoutBtn" class="btn btn-logout" style="display:none;" onclick="handleLogout()">Выйти</button>
         </div>
+    </div>
+
+    <div class="pc-download">
+        Хотите обновлять трофеи на ПК? 
+        <br>
+        <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant" target="_self">
+            Скачать утилиту ShadPS4 Assistant
+        </a>
     </div>
 
     <center>
@@ -83,7 +110,7 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // --- IndexedDB для вечного хранения картинок ---
+    // --- IndexedDB для хранения картинок ---
     const openDB = () => {
         return new Promise((res) => {
             const req = indexedDB.open("TrophyCache", 1);
@@ -126,7 +153,6 @@
             const d = snap.data();
             const cachedIcon = await getImg("main_icon");
             const cachedList = await getImg("html_list");
-            
             updateUI(d.game, d.perc, d.stat, cachedIcon, cachedList);
         }
     }
@@ -167,11 +193,8 @@
             const st = `${earned}/${trophies.length}`;
             const mainIcon = icons['TROP000.PNG'] || "";
 
-            // Сохраняем всё локально (картинки)
             await saveImg("main_icon", mainIcon);
             await saveImg("html_list", html);
-
-            // Сохраняем в облако (только цифры)
             await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: st });
 
             updateUI(title, p, st, mainIcon, html);
