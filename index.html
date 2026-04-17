@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -9,313 +9,239 @@
         :root {
             --ps-blue: #00439c;
             --ps-light-blue: #00aaff;
-            --bg-dark: #080808;
-            --card-bg: #141414;
-            --item-bg: #1e1e1e;
-            --text-main: #f0f0f0;
-            --text-dim: #aaa;
+            --bg-dark: #0a0a0a;
+            --card-bg: #151515;
+            --text-main: #ffffff;
+            --text-dim: #999;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
             padding: 20px;
+        }
+
+        /* Шапка с логином */
+        .top-nav {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-        }
-
-        /* Заголовок сайта */
-        h1.site-title {
-            color: var(--text-main);
-            border-bottom: 3px solid var(--ps-blue);
-            padding-bottom: 10px;
-            width: 100%;
             max-width: 1000px;
-            text-align: center;
-            margin-bottom: 30px;
+            margin: 0 auto 30px;
         }
 
-        /* Зона загрузки */
-        .upload-section {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            border: 2px dashed #333;
-            margin-bottom: 30px;
-            width: 100%;
-            max-width: 400px;
-        }
-        #fileInput { display: none; }
-        .btn {
-            background: var(--ps-blue);
+        .login-placeholder {
+            background: #db4437;
             color: white;
-            padding: 12px 30px;
-            border-radius: 8px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
             cursor: pointer;
             border: none;
-            font-weight: bold;
-            font-size: 1.1em;
-            transition: 0.2s;
-        }
-        .btn:hover { background: var(--ps-light-blue); transform: translateY(-2px); }
-
-        #gameDisplay { width: 100%; max-width: 1000px; }
-
-        /* --- КАРТОЧКА ИГРЫ (ОБНОВЛЕННАЯ) --- */
-        .game-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 30px;
         }
 
-        .game-main-info {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-            margin-bottom: 20px;
+        /* Кнопка загрузки */
+        .upload-zone {
+            text-align: center;
+            margin-bottom: 40px;
         }
-
-        /* Иконка игры */
-        .game-icon {
-            width: 120px;
-            height: 120px;
-            border-radius: 15px;
-            object-fit: cover;
-            border: 3px solid #333;
-            background: #222; /* Заглушка, если нет иконки */
-        }
-
-        .game-details { flex-grow: 1; }
-        .game-title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .game-title-row h2 { margin: 0; font-size: 2.2em; }
-
-        /* Та самая синяя иконка PS4 */
-        .ps4-badge {
-            background-color: #003791; /* Официальный синий PS */
+        .btn-upload {
+            background: var(--ps-blue);
             color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: bold;
-            padding: 5px 15px;
-            border-radius: 5px;
-            font-size: 1.1em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            display: inline-block;
         }
 
-        .game-stats-row {
-            color: var(--text-dim);
-            font-size: 1.2em;
-            display: flex;
-            justify-content: space-between;
-        }
+        #fileInput { display: none; }
 
-        /* Прогресс бар */
-        .progress-container {
+        /* ПАНЕЛЬ ИГРЫ (Кликабельная) */
+        .game-banner {
+            background: var(--card-bg);
             width: 100%;
-            height: 12px;
-            background: #2a2a2a;
-            border-radius: 6px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--ps-blue), var(--ps-light-blue));
-            width: 0%;
-            transition: 1s ease-out;
-        }
-
-        /* --- СПИСОК ТРОФЕЕВ (В СТРОЧКУ) --- */
-        .trophy-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        .trophy-item {
-            background: var(--item-bg);
-            padding: 15px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
             border-radius: 12px;
+            padding: 20px;
             display: flex;
             gap: 20px;
             align-items: center;
-            transition: 0.2s;
-            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            position: relative;
+            border: 1px solid #222;
         }
-        .trophy-item:hover { border-color: #333; background: #252525; }
+        .game-banner:hover {
+            background: #1c1c1c;
+            transform: scale(1.01);
+        }
 
-        .trophy-icon-container { position: relative; width: 64px; height: 64px; }
-        .trophy-icon {
-            width: 64px;
-            height: 64px;
+        .game-icon {
+            width: 100px;
+            height: 100px;
             border-radius: 8px;
             object-fit: cover;
+            background: #333;
         }
 
-        /* Эффект черно-белого для закрытых */
-        .locked-icon {
-            filter: grayscale(100%);
-            opacity: 0.3;
-        }
-
-        .trophy-info { flex-grow: 1; }
-        .trophy-info h4 { margin: 0 0 5px 0; font-size: 1.3em; color: var(--text-main); }
-        .trophy-info p { margin: 0; font-size: 1em; color: var(--text-dim); }
-
-        /* Тип трофея (Бронза, Серебро и т.д.) */
-        .trophy-type {
+        .game-info-main { flex-grow: 1; }
+        .game-title-row { display: flex; justify-content: space-between; align-items: center; }
+        
+        .ps4-tag {
+            background: #003791;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
             font-weight: bold;
-            font-size: 1.1em;
-            width: 30px;
-            text-align: center;
         }
-        .type-B { color: #cd7f32; } /* Bronze */
-        .type-S { color: #c0c0c0; } /* Silver */
-        .type-G { color: #ffd700; } /* Gold */
-        .type-P { color: #e5e4e2; color: var(--ps-light-blue); } /* Platinum */
 
-        .status-icon { font-size: 1.5em; width: 30px; text-align: center; }
-        .unlocked-check { color: #4caf50; } /* Green check */
-        .locked-lock { color: #555; }       /* Gray lock */
+        .progress-line-container {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin: 15px 0;
+        }
+        .progress-line-fill {
+            height: 100%;
+            background: var(--ps-light-blue);
+            width: 0%;
+            transition: 1s;
+        }
+
+        /* СПИСОК ТРОФЕЕВ (Изначально скрыт) */
+        #trophySection {
+            max-width: 1000px;
+            margin: 20px auto;
+            display: none; /* Скрыто */
+        }
+
+        .trophy-row {
+            background: #1a1a1a;
+            margin-bottom: 5px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-radius: 4px;
+        }
+
+        .t-icon { width: 50px; height: 50px; border-radius: 4px; }
+        .t-locked { filter: grayscale(1); opacity: 0.3; }
+
+        .t-type { font-weight: bold; width: 20px; }
+        .type-B { color: #cd7f32; }
+        .type-S { color: #c0c0c0; }
+        .type-G { color: #ffd700; }
+        .type-P { color: #40e0d0; }
+
+        .t-details h4 { margin: 0; font-size: 16px; }
+        .t-details p { margin: 5px 0 0; font-size: 13px; color: var(--text-dim); }
 
     </style>
 </head>
 <body>
 
-    <h1 class="site-title">Trophy Tracker shadps4</h1>
-
-    <div class="upload-section">
-        <label for="fileInput" class="btn">Выбрать ZIP-архив</label>
-        <input type="file" id="fileInput" accept=".zip">
-        <p style="color: var(--text-dim); font-size: 0.9em; margin-top: 15px;">В архиве должны быть TROP.XML и ICON0.PNG</p>
+    <div class="top-nav">
+        <h2>Trophy Tracker shadps4</h2>
+        <button class="login-placeholder">Войти через Google</button>
     </div>
 
-    <div id="gameDisplay"></div>
+    <div class="upload-zone">
+        <label for="fileInput" class="btn-upload">Загрузить Update.zip</label>
+        <input type="file" id="fileInput" accept=".zip">
+    </div>
+
+    <div id="mainContent"></div>
+    <div id="trophySection"></div>
 
     <script>
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            document.getElementById('gameDisplay').innerHTML = '<p style="text-align:center;">Загрузка и парсинг...</p>';
 
-            try {
-                const zip = await JSZip.loadAsync(file);
-                let tropXmlContent = null;
-                let gameIconSrc = null; // Для ICON0.PNG
-                let trophyIcons = {};   // Для TROPxxx.PNG
+            const zip = await JSZip.loadAsync(file);
+            let tropXml = null;
+            let gameIcon = null;
+            let tIcons = {};
 
-                for (let path in zip.files) {
-                    const fileEntry = zip.files[path];
-                    // 1. Ищем TROP.XML
-                    if (path.endsWith('TROP.XML')) {
-                        tropXmlContent = await fileEntry.async("string");
-                    }
-                    // 2. Ищем иконку игры (ICON0.PNG)
-                    if (path.endsWith('ICON0.PNG')) {
-                        const blob = await fileEntry.async("blob");
-                        gameIconSrc = URL.createObjectURL(blob);
-                    }
-                    // 3. Ищем иконки трофеев
-                    if (path.includes('/Icons/') && path.endsWith('.PNG')) {
-                        const blob = await fileEntry.async("blob");
-                        const iconName = path.split('/').pop(); // TROP001.PNG
-                        trophyIcons[iconName] = URL.createObjectURL(blob);
-                    }
+            // Улучшенный поиск файлов
+            for (let path in zip.files) {
+                const entry = zip.files[path];
+                if (path.toLowerCase().endsWith('trop.xml')) {
+                    tropXml = await entry.async("string");
                 }
-
-                if (tropXmlContent) {
-                    parseTrophyXml(tropXmlContent, gameIconSrc, trophyIcons);
-                } else {
-                    document.getElementById('gameDisplay').innerHTML = '<p style="color:red; text-align:center;">Ошибка: TROP.XML не найден в корне ZIP!</p>';
+                if (path.toLowerCase().endsWith('icon0.png')) {
+                    const blob = await entry.async("blob");
+                    gameIcon = URL.createObjectURL(blob);
                 }
-            } catch (err) {
-                document.getElementById('gameDisplay').innerHTML = `<p style="color:red; text-align:center;">Ошибка архива: ${err.message}</p>`;
+                if (path.includes('/Icons/') && path.toLowerCase().endsWith('.png')) {
+                    const blob = await entry.async("blob");
+                    const name = path.split('/').pop().toUpperCase();
+                    tIcons[name] = URL.createObjectURL(blob);
+                }
+            }
+
+            if (tropXml) {
+                renderGame(tropXml, gameIcon, tIcons);
             }
         });
 
-        function parseTrophyXml(xmlString, gameIcon, trophyIcons) {
+        function renderGame(xmlStr, icon, icons) {
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-            
-            const gameTitle = xmlDoc.querySelector('title-name')?.textContent || "Неизвестная игра";
-            const trophies = xmlDoc.querySelectorAll('trophy');
-            
-            let unlockedCount = 0;
-            
-            // Заглушка, если нет ICON0.PNG
-            const finalGameIcon = gameIcon || "https://via.placeholder.com/120?text=No+Icon";
+            const xml = parser.parseFromString(xmlStr, "text/xml");
+            const title = xml.querySelector('title-name')?.textContent || "Game";
+            const trophies = xml.querySelectorAll('trophy');
+            let unlocked = 0;
 
-            let html = `
-                <div class="game-card">
-                    <div class="game-main-info">
-                        <img src="${finalGameIcon}" class="game-icon" alt="Game Icon">
-                        <div class="game-details">
-                            <div class="game-title-row">
-                                <h2>${gameTitle}</h2>
-                                <div class="ps4-badge">ps4</div>
-                            </div>
-                            <div class="game-stats-row">
-                                <span id="percentText">0%</span>
-                                <span>Трофеи: <strong id="trophyCount">0 / 0</strong></span>
-                            </div>
-                            <div class="progress-container"><div class="progress-bar" id="pBar"></div></div>
-                        </div>
-                    </div>
-                    
-                    <div class="trophy-list">
-            `;
-
+            let trophyHtml = '';
             trophies.forEach(t => {
                 const id = t.getAttribute('id');
-                const isUnlocked = t.getAttribute('unlockstate') === "true";
-                const type = t.getAttribute('ttype'); // B, S, G, P
+                const isWin = t.getAttribute('unlockstate') === "true";
+                const type = t.getAttribute('ttype');
                 const name = t.querySelector('name').textContent;
-                const detail = t.querySelector('detail').textContent;
-                
-                if (isUnlocked) unlockedCount++;
+                const desc = t.querySelector('detail').textContent;
+                if (isWin) unlocked++;
 
-                // Ищем иконку трофея TROPxxx.PNG
-                const iconKey = `TROP${id}.PNG`;
-                const iconSrc = trophyIcons[iconKey] || "https://via.placeholder.com/64?text=PS";
+                const tIcon = icons[`TROP${id}.PNG`] || "";
 
-                html += `
-                    <div class="trophy-item">
-                        <div class="status-icon">${isUnlocked ? '<span class="unlocked-check">✔</span>' : '<span class="locked-lock">🔒</span>'}</div>
-                        <div class="trophy-icon-container">
-                            <img src="${iconSrc}" class="trophy-icon ${isUnlocked ? '' : 'locked-icon'}" alt="Trophy">
-                        </div>
-                        <div class="trophy-type type-${type}">${type}</div>
-                        <div class="trophy-info">
+                trophyHtml += `
+                    <div class="trophy-row">
+                        <img src="${tIcon}" class="t-icon ${isWin ? '' : 't-locked'}">
+                        <div class="t-type type-${type}">${type}</div>
+                        <div class="t-details">
                             <h4>${name}</h4>
-                            <p>${detail}</p>
+                            <p>${desc}</p>
                         </div>
                     </div>
                 `;
             });
 
-            html += `</div></div>`;
-            document.getElementById('gameDisplay').innerHTML = html;
+            const percent = Math.round((unlocked / trophies.length) * 100);
 
-            // Обновляем статистику и запускаем анимацию бара
-            const total = trophies.length;
-            const percent = total > 0 ? Math.round((unlockedCount / total) * 100) : 0;
-            
-            setTimeout(() => {
-                document.getElementById('pBar').style.width = percent + "%";
-                document.getElementById('percentText').innerText = percent + "%";
-                document.getElementById('trophyCount').innerText = `${unlockedCount} / ${total}`;
-            }, 100);
+            document.getElementById('mainContent').innerHTML = `
+                <div class="game-banner" onclick="document.getElementById('trophySection').style.display='block'">
+                    <img src="${icon || ''}" class="game-icon">
+                    <div class="game-info-main">
+                        <div class="game-title-row">
+                            <h3>${title}</h3>
+                            <div class="ps4-tag">PS4</div>
+                        </div>
+                        <div class="game-stats-row">
+                            <span>${percent}%</span> • <span>Трофеи: ${unlocked} / ${trophies.length}</span>
+                        </div>
+                        <div class="progress-line-container">
+                            <div class="progress-line-fill" style="width: ${percent}%"></div>
+                        </div>
+                        <small style="color:var(--text-dim)">Нажми, чтобы открыть список</small>
+                    </div>
+                </div>
+            `;
+            document.getElementById('trophySection').innerHTML = trophyHtml;
         }
     </script>
 </body>
