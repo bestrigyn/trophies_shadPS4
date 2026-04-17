@@ -20,42 +20,62 @@
             padding: 15px; 
             border-radius: 10px; 
             text-align: center; 
-            margin-bottom: 35px; /* Хороший отступ до кнопки */
+            margin-bottom: 35px;
             font-size: 14px;
         }
         .pc-download a { color: #00aaff; text-decoration: none; font-weight: bold; border-bottom: 1px solid #00aaff; transition: 0.3s; }
         .pc-download a:hover { color: #fff; border-bottom-color: #fff; }
 
         /* КНОПКА ЗАГРУЗКИ */
-        .upload-wrapper { 
-            text-align: center; 
-            margin-bottom: 40px; /* ВОТ ЭТОТ ОТСТУП уберет слипание с баннером майонеза */
-        }
-
+        .upload-wrapper { text-align: center; margin-bottom: 40px; }
         .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; display: inline-block; }
         .btn:hover { opacity: 0.8; }
         .btn-logout { background: #d32f2f; font-size: 12px; padding: 5px 10px; }
 
-        /* БАННЕР ТРОФЕЕВ */
+        /* ОБНОВЛЕННЫЙ БАННЕР С ФОНОМ ПЛАТИНЫ */
         .banner { 
-            background: linear-gradient(135deg, #001f4d, #00439c); 
-            padding: 25px; 
+            background-color: #111;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Эффект прозрачности 60% через наложение тени */
+            box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.6); 
+            
+            padding: 30px 25px; 
             border-radius: 15px; 
             display: flex; 
             align-items: center; 
             gap: 20px; 
             cursor: pointer; 
-            border: 1px solid #0056cc; 
+            border: 1px solid #00aaff; 
             position: relative; 
             overflow: hidden;
-            margin-top: 10px; /* Дополнительный зазор сверху */
+            transition: 0.3s;
         }
-        .game-icon { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; z-index: 2; background: #000; border: 2px solid rgba(255,255,255,0.1); }
-        .progress-box { flex-grow: 1; z-index: 2; }
-        .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; margin: 12px 0; overflow: hidden; }
-        .fill { height: 100%; background: #00aaff; transition: 1.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
 
-        /* СПИСОК */
+        /* СИНЯЯ ПЛАШКА PS4 В УГЛУ */
+        .banner::before {
+            content: "PS4";
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            background: var(--ps-blue);
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 10px;
+            border-radius: 4px;
+            z-index: 5;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .game-icon { width: 110px; height: 110px; border-radius: 12px; object-fit: cover; z-index: 2; background: #000; border: 2px solid rgba(255,255,255,0.2); }
+        .progress-box { flex-grow: 1; z-index: 2; }
+        .bar { width: 100%; height: 14px; background: rgba(0,0,0,0.6); border-radius: 7px; margin: 12px 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .fill { height: 100%; background: linear-gradient(90deg, #00aaff, #00439c); transition: 1.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
+
+        /* СПИСОК ТРОФЕЕВ */
         #trophyList { margin-top: 20px; display: none; flex-direction: column; gap: 8px; }
         .t-card { background: var(--card); padding: 12px 20px; border-radius: 8px; display: flex; align-items: center; gap: 20px; border-left: 6px solid #444; transition: 0.2s; }
         .t-card.won { border-left-color: var(--green); background: #1b241b; }
@@ -79,7 +99,7 @@
     </div>
 
     <div class="pc-download">
-        Хотите обновлять трофеи на ПК? 
+        Хотите обновлять трофеи на ПК автоматически? 
         <br>
         <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant" target="_self">
             Скачать утилиту ShadPS4 Assistant
@@ -96,9 +116,9 @@
     <div class="banner" id="mainBanner">
         <img id="gameIcon" src="" class="game-icon" style="display:none">
         <div class="progress-box">
-            <h2 id="gameTitle" style="margin:0">Ожидание загрузки...</h2>
+            <h2 id="gameTitle" style="margin:0">Ожидание данных...</h2>
             <div class="bar"><div id="progressFill" class="fill" style="width: 0%"></div></div>
-            <span id="statText">Войдите и выберите файл архива</span>
+            <span id="statText">Загрузите архив для начала</span>
         </div>
     </div>
 
@@ -106,7 +126,6 @@
 </div>
 
 <script type="module">
-    // Твой JS код остается без изменений, он работает отлично
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -196,6 +215,7 @@
             const p = Math.round((earned / trophies.length) * 100);
             const st = `${earned}/${trophies.length}`;
             const mainIcon = icons['TROP000.PNG'] || "";
+
             await saveImg("main_icon", mainIcon);
             await saveImg("html_list", html);
             await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: st });
@@ -204,13 +224,17 @@
     });
 
     function updateUI(title, p, st, img, html) {
+        const banner = document.getElementById('mainBanner');
         document.getElementById('gameTitle').innerText = title;
         document.getElementById('progressFill').style.width = p + "%";
         document.getElementById('statText').innerText = `${p}% — Трофеи: ${st}`;
+        
         if (img) {
             const icon = document.getElementById('gameIcon');
             icon.src = img;
             icon.style.display = 'block';
+            // УСТАНОВКА КАРТИНКИ ПЛАТИНЫ НА ФОН БАННЕРА
+            banner.style.backgroundImage = `url(${img})`;
         }
         document.getElementById('trophyList').innerHTML = html || "Список пуст";
     }
