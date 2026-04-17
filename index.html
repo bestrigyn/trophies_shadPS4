@@ -10,7 +10,7 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; }
         
         .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 30px; }
-        .login-btn { background: #db4437; color: white; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; font-weight: bold; }
+        .login-btn { background: #db4437; color: white; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; font-weight: bold; transition: 0.3s; }
         
         .upload-zone { text-align: center; margin-bottom: 40px; }
         .btn-upload { background: var(--ps-blue); color: white; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; display: inline-block; transition: 0.3s; }
@@ -43,7 +43,7 @@
 
     <div class="top-nav">
         <h2>Trophy Tracker shadps4</h2>
-        <button id="authBtn" class="login-btn">Войти через Google</button>
+        <button id="authBtn" class="login-btn" onclick="loginWithGoogle()">Войти через Google</button>
     </div>
 
     <div class="upload-zone">
@@ -55,31 +55,41 @@
     <div id="trophySection"></div>
 
     <script type="module">
+        // 1. Подключаем Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // ТВОЯ КОНФИГУРАЦИЯ
+        // 2. ТВОИ РЕАЛЬНЫЕ КЛЮЧИ (САМ ВСТАВИЛ)
         const firebaseConfig = {
             apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
             authDomain: "bestrigyn-1d1c5.firebaseapp.com",
             projectId: "bestrigyn-1d1c5",
             storageBucket: "bestrigyn-1d1c5.firebasestorage.app",
             messagingSenderId: "967145662050",
-            appId: "1:967145662050:web:c03ed7463c51105d7bd33b"
+            appId: "1:967145662050:web:c03ed7463c51105d7bd33b",
+            measurementId: "G-7PXF63DKVX"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // Кнопка входа
-        const authBtn = document.getElementById('authBtn');
-        authBtn.onclick = () => {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(err => console.error("Ошибка входа:", err));
+        // 3. ФУНКЦИЯ ВХОДА (ВЫНЕСЕНА ДЛЯ КНОПКИ)
+        window.loginWithGoogle = function() {
+            console.log("Попытка входа через Google...");
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    console.log("Успешно зашли:", result.user.displayName);
+                })
+                .catch((error) => {
+                    console.error("Ошибка Firebase:", error.code, error.message);
+                    alert("Ошибка входа! Проверь 'Authorized domains' в Firebase.");
+                });
         };
 
-        // Следим за статусом входа
+        // Следим за пользователем
         onAuthStateChanged(auth, (user) => {
+            const authBtn = document.getElementById('authBtn');
             if (user) {
                 authBtn.innerText = user.displayName;
                 authBtn.style.background = "#4caf50";
@@ -89,10 +99,12 @@
             }
         });
 
-        // ЛОГИКА ПАРСИНГА
+        // 4. ЛОГИКА ТРОФЕЕВ
         window.toggleTrophies = function() {
             const section = document.getElementById('trophySection');
-            section.style.display = (section.style.display === 'block') ? 'none' : 'block';
+            if (section) {
+                section.style.display = (section.style.display === 'block') ? 'none' : 'block';
+            }
         };
 
         document.getElementById('fileInput').addEventListener('change', async (e) => {
@@ -104,7 +116,9 @@
 
             for (let path in zip.files) {
                 const entry = zip.files[path];
-                if (path.toLowerCase().endsWith('trop.xml')) tropXml = await entry.async("string");
+                if (path.toLowerCase().endsWith('trop.xml')) {
+                    tropXml = await entry.async("string");
+                }
                 if (path.toLowerCase().endsWith('.png')) {
                     const blob = await entry.async("blob");
                     const name = path.split('/').pop().toUpperCase();
@@ -118,7 +132,7 @@
         function renderGame(xmlStr, icons) {
             const parser = new DOMParser();
             const xml = parser.parseFromString(xmlStr, "text/xml");
-            const title = xml.querySelector('title-name')?.textContent || "Game";
+            const title = xml.querySelector('title-name')?.textContent || "Игра";
             const trophies = xml.querySelectorAll('trophy');
             let unlocked = 0, trophyHtml = '';
 
@@ -139,6 +153,8 @@
             });
 
             const percent = Math.round((unlocked / trophies.length) * 100);
+            
+            // ИКОНКА ИЗ ТВОЕЙ ПОДСКАЗКИ: TROP000.PNG
             const gameCover = icons['TROP000.PNG'] || icons['ICON0.PNG'] || "https://via.placeholder.com/100?text=PS";
 
             document.getElementById('mainContent').innerHTML = `
@@ -155,7 +171,7 @@
                         <div class="progress-line-container">
                             <div class="progress-line-fill" style="width: ${percent}%"></div>
                         </div>
-                        <small style="color:var(--ps-light-blue)">Нажми на плашку, чтобы скрыть/раскрыть список</small>
+                        <small style="color:var(--ps-light-blue)">Кликни на плашку, чтобы развернуть список</small>
                     </div>
                 </div>`;
             document.getElementById('trophySection').innerHTML = trophyHtml;
