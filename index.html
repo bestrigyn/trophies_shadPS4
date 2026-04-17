@@ -6,13 +6,10 @@
     <title>Trophy Tracker shadps4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        :root { --ps-blue: #00439c; --ps-light-blue: #00aaff; --bg-dark: #0a0a0a; --card-bg: #151515; --text-main: #ffffff; }
+        :root { --ps-blue: #00439c; --ps-light-blue: #00aaff; --bg-dark: #0a0a0a; --text-main: #ffffff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; }
         .top-nav { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 30px; }
-        .auth-container { position: relative; }
-        .login-btn { background: #db4437; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
-        .logout-menu { display: none; position: absolute; top: 45px; right: 0; background: #222; border: 1px solid #444; border-radius: 4px; padding: 5px; z-index: 100; }
-        .logout-btn { background: #d32f2f; color: white; border: none; padding: 8px 15px; cursor: pointer; width: 100%; border-radius: 3px; }
+        .login-btn { background: #4caf50; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
         .upload-zone { text-align: center; margin-bottom: 40px; }
         .btn-upload { background: var(--ps-blue); color: white; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; display: inline-block; }
         #fileInput { display: none; }
@@ -22,23 +19,20 @@
             padding: 25px; display: flex; gap: 20px; align-items: center; 
             cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
         }
-        .game-icon { width: 120px; height: 120px; border-radius: 10px; object-fit: cover; background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .game-icon { width: 120px; height: 120px; border-radius: 10px; object-fit: cover; background: #000; }
         .progress-line-container { width: 100%; height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; margin: 15px 0; overflow: hidden; }
-        .progress-line-fill { height: 100%; background: #00aaff; width: 0%; transition: 1s; }
+        .progress-line-fill { height: 100%; background: #00aaff; transition: 1s; }
         #trophySection { max-width: 1000px; margin: 20px auto; display: none; }
-        .trophy-row { background: #1a1a1a; margin-bottom: 6px; padding: 15px; display: flex; align-items: center; gap: 20px; border-radius: 8px; }
+        .trophy-row { background: #1a1a1a; margin-bottom: 6px; padding: 15px; display: flex; align-items: center; gap: 20px; border-radius: 8px; border-left: 5px solid #333; }
         .unlocked { border-left: 5px solid #4caf50; background: #1e251e; }
-        .t-icon { width: 50px; height: 50px; border-radius: 5px; }
+        .t-icon { width: 50px; height: 50px; border-radius: 5px; background: #000; }
     </style>
 </head>
 <body>
 
     <div class="top-nav">
-        <h2>🏆 Trophy Tracker</h2>
-        <div class="auth-container">
-            <button id="authBtn" class="login-btn" onclick="handleAuthClick()">Войти через Google</button>
-            <div id="logoutMenu" class="logout-menu"><button class="logout-btn" onclick="logout()">Выйти</button></div>
-        </div>
+        <h2>🏆 Trophy Tracker shadps4</h2>
+        <button id="authBtn" class="login-btn" onclick="handleAuthClick()">Войти</button>
     </div>
 
     <div class="upload-zone">
@@ -51,7 +45,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -68,41 +62,23 @@
         const db = getFirestore(app);
         let userUid = null;
 
-        window.handleAuthClick = () => {
-            if (userUid) {
-                const m = document.getElementById('logoutMenu');
-                m.style.display = m.style.display === 'block' ? 'none' : 'block';
-            } else {
-                signInWithPopup(auth, new GoogleAuthProvider());
-            }
-        };
-
-        window.logout = () => { signOut(auth).then(() => location.reload()); };
+        window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userUid = user.uid;
                 document.getElementById('authBtn').innerText = user.displayName;
-                document.getElementById('authBtn').style.background = "#4caf50";
                 loadData();
             }
         });
 
+        // ЗАГРУЗКА ИЗ ОБЛАКА
         async function loadData() {
             if (!userUid) return;
             const snap = await getDoc(doc(db, "users", userUid));
             if (snap.exists()) {
                 const d = snap.data();
-                const icon = d.imgBase64 || "https://www.playstation.com/content/dam/global_assets/ps-logo.png";
-                document.getElementById('mainContent').innerHTML = `
-                    <div class="game-banner" onclick="alert('Загрузите ZIP для просмотра трофеев')">
-                        <img src="${icon}" class="game-icon">
-                        <div class="game-info-main">
-                            <h2 style="margin:0;">${d.game}</h2>
-                            <div class="progress-line-container"><div class="progress-line-fill" style="width:${d.perc}%"></div></div>
-                            <strong>${d.perc}%</strong> — Трофеи: ${d.stat}
-                        </div>
-                    </div>`;
+                renderUI(d.game, d.perc, d.stat, d.imgBase64, d.fullHtml);
             }
         }
 
@@ -121,10 +97,10 @@
                     if (name === 'TROP000.PNG') mainIconBase64 = icons[name];
                 }
             }
-            if (xml) render(xml, icons, mainIconBase64);
+            if (xml) processXml(xml, icons, mainIconBase64);
         });
 
-        async function render(xmlStr, icons, mainIconBase64) {
+        async function processXml(xmlStr, icons, mainIconBase64) {
             const docXml = new DOMParser().parseFromString(xmlStr, "text/xml");
             const title = docXml.querySelector('title-name')?.textContent || "Game";
             const trops = docXml.querySelectorAll('trophy');
@@ -141,24 +117,35 @@
             });
 
             const p = Math.round((win / trops.length) * 100);
+            const statStr = `${win}/${trops.length}`;
 
+            // СОХРАНЯЕМ ВСЁ В БАЗУ, ВКЛЮЧАЯ ГОТОВЫЙ HTML
             if (userUid) {
                 await setDoc(doc(db, "users", userUid), { 
-                    game: title, 
-                    perc: p, 
-                    stat: `${win}/${trops.length}`,
-                    imgBase64: mainIconBase64 // СОХРАНЯЕМ КАРТИНКУ ПРЯМО В ТЕКСТ В БАЗУ
+                    game: title, perc: p, stat: statStr, 
+                    imgBase64: mainIconBase64, fullHtml: html 
                 });
             }
+            renderUI(title, p, statStr, mainIconBase64, html);
+        }
 
+        function renderUI(title, p, stat, icon, html) {
             document.getElementById('mainContent').innerHTML = `
-                <div class="game-banner" onclick="document.getElementById('trophySection').style.display='block'">
-                    <img src="${mainIconBase64}" class="game-icon">
-                    <div class="game-info-main"><h2>${title}</h2><div class="progress-line-container"><div class="progress-line-fill" style="width:${p}%"></div></div><strong>${p}%</strong></div>
+                <div class="game-banner" onclick="toggleTrophies()">
+                    <img src="${icon}" class="game-icon">
+                    <div class="game-info">
+                        <h2 style="margin:0;">${title}</h2>
+                        <div class="progress-line-container"><div class="progress-line-fill" style="width:${p}%"></div></div>
+                        <strong>${p}% — Трофеи: ${stat}</strong>
+                    </div>
                 </div>`;
             document.getElementById('trophySection').innerHTML = html;
-            document.getElementById('trophySection').style.display = 'block';
         }
+
+        window.toggleTrophies = () => {
+            const s = document.getElementById('trophySection');
+            s.style.display = s.style.display === 'block' ? 'none' : 'block';
+        };
     </script>
 </body>
 </html>
