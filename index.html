@@ -86,9 +86,31 @@
 
         <div id="settingsPanel" class="settings-box">
             <h4 style="margin-top:0">Настройки</h4>
-            <input type="text" id="newNickInput" style="background:#222; border:1px solid #444; color:#fff; padding:8px; border-radius:4px;" placeholder="Изменить ник...">
-            <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">ОК</button>
-            <div style="margin-top:15px; border-top: 1px solid #222; padding-top:10px;">
+            
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="newNickInput" style="background:#222; border:1px solid #444; color:#fff; padding:8px; border-radius:4px; width:70%;" placeholder="Изменить ник...">
+                <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">ОК</button>
+            </div>
+
+            <div style="margin-bottom: 15px; border-top: 1px solid #222; padding-top: 10px;">
+                <small style="color:#666; text-transform: uppercase; font-size: 10px;">Выберите пол:</small>
+                <div style="display: flex; gap: 20px; margin-top: 10px; align-items: center;">
+                    
+                    <div onclick="setGender('man')" style="cursor:pointer; text-align:center; position: relative;">
+                        <img src="human/gender/man.png" style="width:40px; height:40px; display:block; border-radius: 4px; border: 1px solid #333;">
+                        <span id="check_man" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--green); color:white; border-radius:50%; width:15px; height:15px; font-size:10px; line-height:15px;">✓</span>
+                        <small style="font-size:10px; color:#888;">Муж</small>
+                    </div>
+
+                    <div onclick="setGender('woman')" style="cursor:pointer; text-align:center; position: relative;">
+                        <img src="human/gender/woman.png" style="width:40px; height:40px; display:block; border-radius: 4px; border: 1px solid #333;">
+                        <span id="check_woman" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--green); color:white; border-radius:50%; width:15px; height:15px; font-size:10px; line-height:15px;">✓</span>
+                        <small style="font-size:10px; color:#888;">Жен</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #222; padding-top:10px;">
                 <small style="color:#666">ПОДКЛЮЧЕНИЯ:</small><br>
                 <div id="link_google" class="link-badge" style="margin-top:5px;">GOOGLE AUTH</div>
             </div>
@@ -155,7 +177,7 @@
         }
     };
 
-    // Динамическая загрузка ТОПа (Исправленная версия)
+    // Динамическая загрузка ТОПа
     async function loadTopPlayers() {
         const listDiv = document.getElementById('topPlayersList');
         listDiv.innerHTML = '<div style="color:#666">Загрузка игроков из базы...</div>';
@@ -167,9 +189,7 @@
 
             snap.forEach(doc => {
                 const d = doc.data();
-                // Если нет customName, пробуем взять displayName из Google
                 const name = d.customName || d.displayName || "Анонимный игрок";
-                // Если игры нет, пишем "Данные не загружены"
                 const gameInfo = d.game ? `${d.game} (${d.perc || 0}%)` : "Данные не загружены";
 
                 html += `
@@ -181,10 +201,19 @@
             });
 
             listDiv.innerHTML = html || '<div style="color:#666">Игроков пока нет.</div>';
-        } catch(e) { 
-            console.error(e);
-            listDiv.innerHTML = '<div style="color:#f44336">Ошибка загрузки ТОПа.</div>'; 
-        }
+        } catch(e) { listDiv.innerHTML = 'Ошибка загрузки ТОПа.'; }
+    }
+
+    // Управление полом
+    window.setGender = async (gender) => {
+        if (!userUid) return;
+        await setDoc(doc(db, "users", userUid), { gender: gender }, { merge: true });
+        updateGenderUI(gender);
+    };
+
+    function updateGenderUI(gender) {
+        document.getElementById('check_man').style.display = gender === 'man' ? 'block' : 'none';
+        document.getElementById('check_woman').style.display = gender === 'woman' ? 'block' : 'none';
     }
 
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
@@ -211,12 +240,17 @@
             document.getElementById('link_google').classList.add('active');
             document.getElementById('ach_form').classList.add('active');
             const snap = await getDoc(doc(db, "users", user.uid));
-            document.getElementById('userName').innerText = (snap.exists() && snap.data().customName) ? snap.data().customName : user.displayName;
+            if (snap.exists()) {
+                const d = snap.data();
+                document.getElementById('userName').innerText = d.customName || user.displayName;
+                if (d.gender) updateGenderUI(d.gender);
+            } else {
+                document.getElementById('userName').innerText = user.displayName;
+            }
             loadData();
         }
     });
 
-    // IndexedDB и ZIP логика
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
@@ -273,9 +307,9 @@
     });
 
     function updateUI(title, p, st, img, html) {
-        document.getElementById('gameTitle').innerText = title;
-        document.getElementById('progressFill').style.width = p + "%";
-        document.getElementById('statText').innerText = `${p}% — Трофеи: ${st}`;
+        document.getElementById('gameTitle').innerText = title || "Загрузите данные...";
+        document.getElementById('progressFill').style.width = (p || 0) + "%";
+        document.getElementById('statText').innerText = `${p || 0}% — Трофеи: ${st || '0/0'}`;
         if (img) document.getElementById('mainBanner').style.backgroundImage = `url(${img})`;
         document.getElementById('trophyList').innerHTML = html || "";
         if (p === 100) document.getElementById('ach_plat').classList.add('active');
