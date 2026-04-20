@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Trophy Tracker Pro - Final Stability Fix</title>
+    <title>Trophy Tracker Pro - Ultra Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #121212; --green: #4caf50; --accent: #00aaff; }
@@ -108,6 +108,7 @@
                 <small style="color:#666">ПОДКЛЮЧЕНИЯ:</small><br>
                 <div id="link_google" class="link-badge" style="margin-top:5px;">GOOGLE AUTH</div>
             </div>
+            <button class="top-btn" style="margin-top:15px; background:#444;" onclick="toggleSettings()">Закрыть</button>
         </div>
     </div>
 
@@ -151,9 +152,14 @@
     const db = getFirestore(app);
     let userUid = null;
 
+    // Исправленное переключение секций (предотвращает наложение)
     window.showSection = (name) => {
-        const sections = ['profileSection', 'achievementsSection', 'topSection', 'contentArea', 'downloadArea'];
-        sections.forEach(s => document.getElementById(s).style.display = 'none');
+        const sections = ['profileSection', 'achievementsSection', 'topSection', 'contentArea', 'downloadArea', 'settingsPanel'];
+        sections.forEach(s => {
+            const el = document.getElementById(s);
+            if(el) el.style.display = 'none';
+        });
+        
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
         if(name === 'profile') {
@@ -202,9 +208,17 @@
 
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
     window.handleLogout = () => signOut(auth).then(() => location.reload());
+
+    // Переключение настроек (предотвращает наложение)
     window.toggleSettings = () => {
-        const p = document.getElementById('settingsPanel');
-        p.style.display = p.style.display === 'block' ? 'none' : 'block';
+        const settings = document.getElementById('settingsPanel');
+        const topSection = document.getElementById('topSection');
+        if (settings.style.display === 'none' || settings.style.display === '') {
+            if (topSection) topSection.style.display = 'none'; 
+            settings.style.display = 'block';
+        } else {
+            settings.style.display = 'none';
+        }
     };
 
     window.updateNickname = async () => {
@@ -224,13 +238,13 @@
             document.getElementById('link_google').classList.add('active');
             document.getElementById('ach_form').classList.add('active');
 
-            // Сначала ставим имя Google, потом проверяем базу
+            // Сначала ставим имя Google
             document.getElementById('userName').innerText = user.displayName;
 
             const snap = await getDoc(doc(db, "users", user.uid));
             if (snap.exists()) {
                 const d = snap.data();
-                // Приоритет кастомного ника из базы
+                // Стабильный ник из базы (приоритет)
                 if (d.customName) {
                     document.getElementById('userName').innerText = d.customName;
                     document.getElementById('newNickInput').value = d.customName;
