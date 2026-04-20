@@ -5,26 +5,17 @@
     <title>Trophy Tracker Pro - Bestrigyn</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #161616; --green: #4caf50; --gray: #444; }
+        :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #161616; --green: #4caf50; --gray: #333; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); padding: 15px 25px; border-radius: 12px; border: 1px solid #333; }
         #userName { color: var(--green); font-weight: bold; cursor: pointer; text-decoration: underline; }
 
-        .content-panel { display: none; background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--gray); animation: fadeIn 0.3s; }
+        .content-panel { display: none; background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #444; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        input[type="text"], textarea { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; box-sizing: border-box; }
-        
-        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
-        
-        .banner { background: #111; padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; border: 1px solid #00aaff; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.7); min-height: 120px; cursor: pointer; }
-        .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 10px 0; overflow: hidden; }
-        .fill { height: 100%; background: #00aaff; width: 0%; transition: 1s; }
-
-        /* Стили для плиток трофеев */
+        /* Стили плиток трофеев */
         .trophy-item { 
             background: var(--card); 
             padding: 8px; 
@@ -35,11 +26,26 @@
             border: 1px solid #333; 
             position: relative; 
             overflow: hidden; 
+            margin-bottom: 8px;
         }
-        .trophy-icon { width: 40px; height: 40px; border-radius: 4px; transition: 0.3s; }
-        .trophy-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; }
+        .trophy-icon { 
+            width: 40px !important; 
+            height: 40px !important; 
+            border-radius: 4px; 
+            object-fit: cover;
+        }
+        .trophy-bar { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 3px; 
+        }
 
-        .download-footer { margin-top: 30px; text-align: center; padding: 20px; border-top: 1px solid #333; color: #888; }
+        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; }
+        .banner { background: #111; padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; border: 1px solid #00aaff; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.7); min-height: 120px; cursor: pointer; }
+        .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 10px 0; overflow: hidden; }
+        .fill { height: 100%; background: #00aaff; width: 0%; transition: 1s; }
     </style>
 </head>
 <body>
@@ -61,38 +67,27 @@
 
     <div id="profileSection" class="content-panel">
         <h3>Настройки профиля</h3>
-        <div class="profile-grid">
-            <div>
-                <label>Ваш ник</label><br>
-                <input type="text" id="profNick" placeholder="Никнейм..."><br><br>
-                <button class="btn" onclick="saveProfileData()">Сохранить</button>
-            </div>
-            <div>
-                <label>BBCode для форумов</label>
-                <textarea id="bbCodeField" rows="3" readonly style="margin-top:10px;">[URL=https://bestrigyn.github.io][IMG]https://bestrigyn.github.io/card.png[/IMG][/URL]</textarea>
-            </div>
-        </div>
+        <input type="text" id="profNick" placeholder="Никнейм..." style="padding:10px; width:200px; background:#222; border:1px solid #444; color:#fff; border-radius:5px;">
+        <button class="btn" onclick="saveProfileData()" style="margin-left:10px;">Сохранить</button>
     </div>
 
     <div style="text-align:center; margin-bottom: 20px;">
-        <label class="btn" style="background:#28a745">📂 Выбрать Update.zip <input type="file" id="fileInput" accept=".zip" hidden></label>
+        <label class="btn" style="background:#28a745; cursor:pointer;">📂 Выбрать Update.zip <input type="file" id="fileInput" accept=".zip" hidden></label>
     </div>
 
     <div class="banner" id="mainBanner" onclick="toggleSection('trophyList')">
-        <img id="gameIcon" style="width:80px; height:80px; border-radius:10px; display:none; object-fit:cover;">
+        <img id="gameIcon" style="width:80px; height:80px; border-radius:10px; display:none;">
         <div style="flex-grow:1;">
-            <h2 id="gameTitle" style="margin:0">Загрузите данные</h2>
+            <h2 id="gameTitle" style="margin:0">Загрузите Update.zip</h2>
             <div class="bar"><div id="progressFill" class="fill"></div></div>
             <span id="statText">0% — Трофеи: 0/0</span>
         </div>
     </div>
 
-    <div id="trophyList" style="display:none; flex-direction:column; gap:8px; margin-top:20px;"></div>
+    <div id="trophyList" style="display:none; flex-direction:column; margin-top:20px;"></div>
 
-    <div class="download-footer">
-        <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant" class="btn" target="_blank">
-            📥 Скачать ShadPS4 Assistant
-        </a>
+    <div style="margin-top:30px; text-align:center;">
+        <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant" class="btn" target="_blank">📥 Скачать ShadPS4 Assistant</a>
     </div>
 </div>
 
@@ -139,23 +134,17 @@
             document.getElementById('authBtn').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
             await loadData();
-            await loadLeaderboard();
         }
     });
 
     window.toggleSection = (id) => {
-        ['profileSection', 'leaderboardSection', 'trophyList'].forEach(s => {
-            const el = document.getElementById(s);
-            if(s === id) el.style.display = (el.style.display === 'none' || el.style.display === '') ? (s==='trophyList'?'flex':'block') : 'none';
-            else el.style.display = 'none';
-        });
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === 'none' || el.style.display === '') ? (id==='trophyList'?'flex':'block') : 'none';
     };
 
     window.saveProfileData = async () => {
         const nick = document.getElementById('profNick').value;
-        if(!nick) return alert("Введите ник");
-        await setDoc(doc(db, "users", userUid), { username: nick }, { merge: true });
-        alert("Сохранено!");
+        if(nick) await setDoc(doc(db, "users", userUid), { username: nick }, { merge: true });
         loadData();
     };
 
@@ -164,26 +153,10 @@
         if (snap.exists()) {
             const d = snap.data();
             document.getElementById('userName').innerText = d.username || "Игрок";
-            document.getElementById('profNick').value = d.username || "";
             const icon = await getImg("main_icon");
             const list = await getImg("html_list");
             updateUI(d.game, d.perc, d.stat, icon, list);
         }
-    }
-
-    async function loadLeaderboard() {
-        const list = document.getElementById('leaderboardList');
-        const q = query(collection(db, "users"), orderBy("perc", "desc"), limit(10));
-        const snap = await getDocs(q);
-        let html = "";
-        snap.forEach(u => {
-            const data = u.data();
-            html += `<div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-                <span>${data.username || 'Аноним'}</span>
-                <b>${data.perc || 0}%</b>
-            </div>`;
-        });
-        list.innerHTML = html || "Пусто";
     }
 
     document.getElementById('fileInput').addEventListener('change', async (e) => {
@@ -209,16 +182,16 @@
                 const tid = String(t.getAttribute('id')).padStart(3, '0');
                 const img = icons[`TROP${tid}.PNG`] || "";
                 
-                // Фильтр и цвет полоски
-                const imgStyle = won ? "filter: grayscale(0); opacity: 1;" : "filter: grayscale(1); opacity: 0.4;";
-                const barColor = won ? "var(--green)" : "#333";
+                // Исправленная логика ЧБ и Полосок
+                const imgFilter = won ? "grayscale(0)" : "grayscale(1) opacity(0.5)";
+                const barColor = won ? "var(--green)" : "var(--gray)";
 
                 tHtml += `
                 <div class="trophy-item">
-                    <img src="${img}" class="trophy-icon" style="${imgStyle}">
+                    <img src="${img}" class="trophy-icon" style="filter: ${imgFilter};">
                     <div style="flex-grow:1;">
-                        <b style="font-size:13px; color:${won?'#fff':'#888'}">${t.querySelector('name').textContent}</b><br>
-                        <small style="font-size:11px; color:#666">${t.querySelector('detail').textContent}</small>
+                        <b style="font-size:13px; color:${won?'#fff':'#777'}">${t.querySelector('name').textContent}</b><br>
+                        <small style="font-size:11px; color:#555">${t.querySelector('detail').textContent}</small>
                     </div>
                     <div class="trophy-bar" style="background:${barColor};"></div>
                 </div>`;
