@@ -18,14 +18,20 @@
         .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         input[type="text"] { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; box-sizing: border-box; }
         
-        .system-trophies { display: flex; gap: 10px; margin-top: 10px; }
-        .sys-t { width: 100px; padding: 15px 5px; background: #111; border-radius: 10px; border: 1px solid #222; text-align: center; font-size: 11px; color: #555; border: 2px solid transparent; }
-        .sys-t b { font-size: 20px; display: block; margin-bottom: 5px; filter: grayscale(1); }
-        .sys-t.unlocked { border-color: gold; color: #fff; background: #1a1a00; }
-        .sys-t.unlocked b { filter: grayscale(0); }
+        /* ТЕГИ СОЦСЕТЕЙ */
+        .social-tags { display: flex; gap: 5px; }
+        .tag-status { padding: 4px 10px; background: #111; border: 2px solid var(--gray); border-radius: 20px; font-size: 12px; color: #aaa; font-weight: bold; cursor: default; }
+        .tag-status.unlocked { border-color: var(--green); color: var(--green); }
 
-        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .btn-red { background: #d32f2f; font-size: 11px; padding: 5px 10px; margin-top: 10px; }
+        /* ТРОФЕИ АКАУНТА */
+        .account-trophies { display: flex; gap: 10px; margin-top: 10px; }
+        .acc-t { width: 100px; padding: 15px 5px; background: #111; border-radius: 10px; text-align: center; font-size: 11px; color: #555; border: 2px solid transparent; }
+        .acc-t b { font-size: 20px; display: block; filter: grayscale(1); }
+        .acc-t.unlocked { border-color: gold; color: #fff; background: #1a1a00; }
+        .acc-t.unlocked b { filter: grayscale(0); }
+
+        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
 
         .banner { background: #111; padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #00aaff; position: relative; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.7); min-height: 120px; }
         .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 10px 0; overflow: hidden; }
@@ -56,41 +62,48 @@
 
     <div id="leaderboardSection" class="content-panel">
         <h3 style="margin-top:0">🏆 Топ игроков</h3>
-        <div id="leaderboardList">Нажмите "Войти", чтобы увидеть список</div>
+        <div id="leaderboardList">Войдите, чтобы увидеть список...</div>
     </div>
 
     <div id="profileSection" class="content-panel">
-        <h3 style="margin-top:0">Настройки аккаунта</h3>
+        <h3 style="margin-top:0">Профиль</h3>
         <div class="profile-grid">
             <div>
-                <label>Никнейм</label><br>
+                <label>Отображаемый ник</label><br>
                 <input type="text" id="profNick" placeholder="Твой ник..."><br><br>
                 <label>Пол:</label>
                 <input type="radio" name="gender" value="M" id="gM"> М 
                 <input type="radio" name="gender" value="F" id="gF"> Ж
                 <br><br>
-                <button class="btn" onclick="saveProfileData()">Сохранить изменения</button>
-                <br>
-                <button class="btn btn-red" onclick="resetCache()">⚠️ Сбросить кэш и картинки</button>
+                <button class="btn" onclick="saveProfileData()">Сохранить профиль</button>
             </div>
             <div>
-                <label>Системные трофеи:</label>
-                <div class="system-trophies">
-                    <div id="sysT1" class="sys-t"><b>🏆</b>Первая платина</div>
-                    <div id="sysT2" class="sys-t"><b>👤</b>Анкета заполнена</div>
+                <label>Статус аккаунта:</label>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px 0;">
+                    <span style="color:#aaa; font-size: 14px;">Привязка аккаунта</span>
+                    <span id="accountLinkedTag" class="tag-status">Не привязан</span>
+                </div>
+                <div class="social-tags" style="margin-bottom:20px;">
+                    <span id="googleTag" class="tag-status">GOOGLE</span>
+                </div>
+
+                <label>Достижения аккаунта:</label>
+                <div class="account-trophies">
+                    <div id="accT1" class="acc-t"><b>🏆</b>Первая платина</div>
+                    <div id="accT2" class="acc-t"><b>👤</b>Профиль заполнен</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div style="text-align:center; margin-bottom: 20px;">
-        <label class="btn">📂 Загрузить Update.zip <input type="file" id="fileInput" accept=".zip" hidden></label>
+        <label class="btn">📂 Загрузить ZIP <input type="file" id="fileInput" accept=".zip" hidden></label>
     </div>
 
     <div class="banner" id="mainBanner" onclick="toggleSection('trophyList')">
         <img id="gameIcon" style="width:100px; height:100px; border-radius:10px; display:none; object-fit:cover;">
         <div style="flex-grow:1; z-index:2">
-            <h2 id="gameTitle" style="margin:0">Ожидание данных...</h2>
+            <h2 id="gameTitle" style="margin:0">Ожидание ZIP...</h2>
             <div class="bar"><div id="progressFill" class="fill"></div></div>
             <span id="statText">0% — Трофеи: 0/0</span>
         </div>
@@ -118,19 +131,12 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // Работа с базой данных картинок (IndexedDB)
+    // Кэш (IndexedDB)
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
         req.onsuccess = () => res(req.result);
     });
-
-    // Сброс кэша только вручную!
-    window.resetCache = () => {
-        const req = indexedDB.deleteDatabase("TrophyCache");
-        req.onsuccess = () => { alert("Кэш очищен. Загрузите ZIP снова."); location.reload(); };
-    };
-
     const saveImg = async (id, data) => { (await openDB()).transaction("images", "readwrite").objectStore("images").put(data, id); };
     const getImg = async (id) => {
         const idb = await openDB();
@@ -149,6 +155,13 @@
             userUid = user.uid;
             document.getElementById('authBtn').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
+            
+            // Теги привязки: если вошел через Google, оба горят зеленым
+            document.getElementById('googleTag').classList.add('unlocked');
+            const linkTag = document.getElementById('accountLinkedTag');
+            linkTag.innerText = "Привязан";
+            linkTag.classList.add('unlocked');
+
             await loadData();
             await loadLeaderboard();
         }
@@ -173,7 +186,7 @@
             sys_t2: (!!nick && !!gen) 
         }, { merge: true });
         
-        alert("Профиль обновлен!");
+        alert("Профиль сохранен!");
         loadData();
     };
 
@@ -186,8 +199,8 @@
             if(d.gender === "M") document.getElementById('gM').checked = true;
             if(d.gender === "F") document.getElementById('gF').checked = true;
             
-            if(d.perc === 100) document.getElementById('sysT1').classList.add('unlocked');
-            if(d.sys_t2) document.getElementById('sysT2').classList.add('unlocked');
+            if(d.perc === 100) document.getElementById('accT1').classList.add('unlocked');
+            if(d.sys_t2) document.getElementById('accT2').classList.add('unlocked');
             
             const cachedIcon = await getImg("main_icon");
             const cachedList = await getImg("html_list");
@@ -198,7 +211,8 @@
     async function loadLeaderboard() {
         const list = document.getElementById('leaderboardList');
         try {
-            const q = query(collection(db, "users"), limit(20)); // Пока без orderBy, чтобы не просить индексы
+            // ФИНАЛЬНЫЙ ЗАПРОС С СОРТИРОВКОЙ
+            const q = query(collection(db, "users"), orderBy("perc", "desc"), limit(20));
             const snap = await getDocs(q);
             let html = "";
             snap.forEach(u => {
@@ -206,13 +220,14 @@
                 const isMe = u.id === userUid;
                 html += `
                 <div class="leader-item ${isMe?'me':''}">
-                    <span>${data.username || 'Аноним'} ${isMe?'(ВЫ)':''}</span>
+                    <span>${data.username || 'Аноним'}</span>
                     <span style="font-size: 13px; color: #888;">${data.game || '---'} <b>(${data.perc || 0}%)</b></span>
                 </div>`;
             });
             list.innerHTML = html || "В базе пока никого нет";
         } catch (e) {
-            list.innerHTML = "Ошибка: проверьте правила (Rules) в Firebase.";
+            console.error(e);
+            list.innerHTML = "Для сортировки создайте индекс в Firebase Console.";
         }
     }
 
