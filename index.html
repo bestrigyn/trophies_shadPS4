@@ -12,7 +12,8 @@
         /* Шапка профиля */
         .header { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
         .nav-bar { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
-        .nav-link { color: #888; text-decoration: none; font-size: 13px; text-transform: uppercase; font-weight: bold; }
+        .nav-link { color: #888; text-decoration: none; font-size: 13px; text-transform: uppercase; font-weight: bold; cursor: pointer; }
+        .nav-link:hover { color: #fff; }
         .nav-link.active { color: var(--green); }
 
         /* Кнопки управления */
@@ -34,7 +35,7 @@
         .link-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid #333; color: #555; }
         .link-badge.active { border-color: var(--green); color: var(--green); }
 
-        /* Панель настроек */
+        /* Панель настроек (одна, только нужная) */
         .settings-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
         .input-nick { background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; width: 200px; margin-right: 10px; }
 
@@ -55,11 +56,10 @@
 <div class="container">
     <div class="header">
         <div class="nav-bar">
-            <a href="#" class="nav-link active">Профиль</a>
-            <a href="#" class="nav-link">Друзья</a>
-            <a href="#" class="nav-link">Карточки</a>
-            <a href="#" class="nav-link">Настройки</a>
-            <button class="top-btn" onclick="alert('ТОП игроков скоро появится!')">ТОП</button>
+            <a onclick="alert('Вы уже в профиле')" class="nav-link active">Профиль</a>
+            <a onclick="alert('Друзья: Скоро открытие!')" class="nav-link">Друзья</a>
+            <a onclick="alert('Карточки: Скоро открытие!')" class="nav-link">Карточки</a>
+            <button class="top-btn" onclick="alert('ТОП акаунтов в разработке!')">ТОП</button>
             <button id="logoutBtn" class="exit-btn" style="display:none;" onclick="handleLogout()">Выйти</button>
         </div>
 
@@ -90,7 +90,7 @@
         <div id="settingsPanel" class="settings-box">
             <h4 style="margin-top:0">Настройки профиля</h4>
             <div style="display:flex">
-                <input type="text" id="newNickInput" class="input-nick" placeholder="Новый ник...">
+                <input type="text" id="newNickInput" class="input-nick" placeholder="Изменить ник...">
                 <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">Сохранить</button>
             </div>
         </div>
@@ -118,6 +118,7 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // Твои конфиги Firebase (оставил как были)
     const firebaseConfig = {
         apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
         authDomain: "bestrigyn-1d1c5.firebaseapp.com",
@@ -149,7 +150,6 @@
         }
     };
 
-    // Слушатель входа
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             userUid = user.uid;
@@ -168,7 +168,6 @@
         }
     });
 
-    // IndexedDB для кэша
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
