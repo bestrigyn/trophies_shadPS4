@@ -19,7 +19,7 @@
         input[type="text"] { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; box-sizing: border-box; }
         
         .system-trophies { display: flex; gap: 10px; margin-top: 10px; }
-        .sys-t { width: 100px; padding: 15px 5px; background: #111; border-radius: 10px; border: 1px solid #222; text-align: center; font-size: 11px; color: #555; }
+        .sys-t { width: 100px; padding: 15px 5px; background: #111; border-radius: 10px; border: 1px solid #222; text-align: center; font-size: 11px; color: #555; border: 2px solid transparent; }
         .sys-t b { font-size: 20px; display: block; margin-bottom: 5px; filter: grayscale(1); }
         .sys-t.unlocked { border-color: gold; color: #fff; background: #1a1a00; }
         .sys-t.unlocked b { filter: grayscale(0); }
@@ -27,7 +27,7 @@
         .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-red { background: #d32f2f; font-size: 11px; padding: 5px 10px; margin-top: 10px; }
 
-        .banner { background: #111; padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #00aaff; position: relative; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.7); }
+        .banner { background: #111; padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #00aaff; position: relative; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.7); min-height: 120px; }
         .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 10px 0; overflow: hidden; }
         .fill { height: 100%; background: #00aaff; width: 0%; transition: 1s cubic-bezier(0.1, 0.7, 0.1, 1); }
 
@@ -37,6 +37,7 @@
         #trophyList { margin-top: 20px; display: none; flex-direction: column; gap: 8px; }
         .t-card { background: var(--card); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 15px; border-left: 5px solid #333; }
         .t-card.won { border-left-color: var(--green); }
+        .t-img { width: 50px; height: 50px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -55,7 +56,7 @@
 
     <div id="leaderboardSection" class="content-panel">
         <h3 style="margin-top:0">🏆 Топ игроков</h3>
-        <div id="leaderboardList">Загрузка списка...</div>
+        <div id="leaderboardList">Нажмите "Войти", чтобы увидеть список</div>
     </div>
 
     <div id="profileSection" class="content-panel">
@@ -68,15 +69,15 @@
                 <input type="radio" name="gender" value="M" id="gM"> М 
                 <input type="radio" name="gender" value="F" id="gF"> Ж
                 <br><br>
-                <button class="btn" onclick="saveProfileData()">Сохранить</button>
+                <button class="btn" onclick="saveProfileData()">Сохранить изменения</button>
                 <br>
-                <button class="btn btn-red" onclick="resetCache()">Сбросить кэш картинок</button>
+                <button class="btn btn-red" onclick="resetCache()">⚠️ Сбросить кэш и картинки</button>
             </div>
             <div>
-                <label>Достижения аккаунта:</label>
+                <label>Системные трофеи:</label>
                 <div class="system-trophies">
                     <div id="sysT1" class="sys-t"><b>🏆</b>Первая платина</div>
-                    <div id="sysT2" class="sys-t"><b>📝</b>Анкета заполнена</div>
+                    <div id="sysT2" class="sys-t"><b>👤</b>Анкета заполнена</div>
                 </div>
             </div>
         </div>
@@ -89,7 +90,7 @@
     <div class="banner" id="mainBanner" onclick="toggleSection('trophyList')">
         <img id="gameIcon" style="width:100px; height:100px; border-radius:10px; display:none; object-fit:cover;">
         <div style="flex-grow:1; z-index:2">
-            <h2 id="gameTitle" style="margin:0">Ожидание ZIP...</h2>
+            <h2 id="gameTitle" style="margin:0">Ожидание данных...</h2>
             <div class="bar"><div id="progressFill" class="fill"></div></div>
             <span id="statText">0% — Трофеи: 0/0</span>
         </div>
@@ -117,16 +118,17 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // Работа с кэшем
+    // Работа с базой данных картинок (IndexedDB)
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
         req.onsuccess = () => res(req.result);
     });
 
-    window.resetCache = async () => {
+    // Сброс кэша только вручную!
+    window.resetCache = () => {
         const req = indexedDB.deleteDatabase("TrophyCache");
-        req.onsuccess = () => { alert("Кэш очищен. Перезагрузите страницу."); location.reload(); };
+        req.onsuccess = () => { alert("Кэш очищен. Загрузите ZIP снова."); location.reload(); };
     };
 
     const saveImg = async (id, data) => { (await openDB()).transaction("images", "readwrite").objectStore("images").put(data, id); };
@@ -135,6 +137,7 @@
         return new Promise(res => {
             const req = idb.transaction("images").objectStore("images").get(id);
             req.onsuccess = () => res(req.result);
+            req.onerror = () => res(null);
         });
     };
 
@@ -172,7 +175,6 @@
         
         alert("Профиль обновлен!");
         loadData();
-        loadLeaderboard();
     };
 
     async function loadData() {
@@ -188,37 +190,29 @@
             if(d.sys_t2) document.getElementById('sysT2').classList.add('unlocked');
             
             const cachedIcon = await getImg("main_icon");
-            updateUI(d.game, d.perc, d.stat, cachedIcon);
+            const cachedList = await getImg("html_list");
+            updateUI(d.game, d.perc, d.stat, cachedIcon, cachedList);
         }
     }
 
     async function loadLeaderboard() {
         const list = document.getElementById('leaderboardList');
         try {
-            // Пытаемся загрузить с сортировкой
-            let q = query(collection(db, "users"), orderBy("perc", "desc"), limit(10));
-            let snap;
-            try {
-                snap = await getDocs(q);
-            } catch (err) {
-                console.warn("Индекс еще не готов, грузим без сортировки");
-                q = query(collection(db, "users"), limit(10));
-                snap = await getDocs(q);
-            }
-
+            const q = query(collection(db, "users"), limit(20)); // Пока без orderBy, чтобы не просить индексы
+            const snap = await getDocs(q);
             let html = "";
             snap.forEach(u => {
                 const data = u.data();
                 const isMe = u.id === userUid;
                 html += `
                 <div class="leader-item ${isMe?'me':''}">
-                    <span>${data.username || 'Аноним'}</span>
+                    <span>${data.username || 'Аноним'} ${isMe?'(ВЫ)':''}</span>
                     <span style="font-size: 13px; color: #888;">${data.game || '---'} <b>(${data.perc || 0}%)</b></span>
                 </div>`;
             });
             list.innerHTML = html || "В базе пока никого нет";
         } catch (e) {
-            list.innerHTML = "Ошибка доступа к базе данных.";
+            list.innerHTML = "Ошибка: проверьте правила (Rules) в Firebase.";
         }
     }
 
@@ -226,47 +220,51 @@
         const file = e.target.files[0];
         if (!file || !userUid) return;
         const zip = await JSZip.loadAsync(file);
-        let xmlData = null, iconBase64 = "";
+        let xmlData = null, icons = {};
         
         for (let path in zip.files) {
-            if (path.toUpperCase().endsWith('TROP.XML')) xmlData = await zip.files[path].async("string");
-            if (path.toUpperCase().endsWith('TROP000.PNG')) iconBase64 = "data:image/png;base64," + await zip.files[path].async("base64");
+            const name = path.split('/').pop().toUpperCase();
+            if (name === 'TROP.XML') xmlData = await zip.files[path].async("string");
+            if (name.endsWith('.PNG')) icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
         }
 
         if (xmlData) {
             const xml = new DOMParser().parseFromString(xmlData, "text/xml");
             const trophies = xml.querySelectorAll('trophy');
-            let earned = 0;
-            trophies.forEach(t => { if(t.getAttribute('unlockstate') === "true") earned++; });
-            const p = Math.round((earned / trophies.length) * 100);
+            let earned = 0, tHtml = "";
             
+            trophies.forEach(t => {
+                const won = t.getAttribute('unlockstate') === "true";
+                if(won) earned++;
+                const tid = String(t.getAttribute('id')).padStart(3, '0');
+                const img = icons[`TROP${tid}.PNG`] || "";
+                tHtml += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div><b>${t.querySelector('name').textContent}</b><br><small>${t.querySelector('detail').textContent}</small></div></div>`;
+            });
+
+            const p = Math.round((earned / trophies.length) * 100);
             const title = xml.querySelector('title-name')?.textContent || "Game";
             const statText = `${earned}/${trophies.length}`;
 
-            await saveImg("main_icon", iconBase64);
-            await setDoc(doc(db, "users", userUid), { 
-                game: title, 
-                perc: p, 
-                stat: statText 
-            }, { merge: true });
-
-            updateUI(title, p, statText, iconBase64);
-            loadLeaderboard();
-            alert("Данные успешно загружены!");
+            await saveImg("main_icon", icons['TROP000.PNG'] || "");
+            await saveImg("html_list", tHtml);
+            
+            await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: statText }, { merge: true });
+            loadData();
+            alert("Данные загружены!");
         }
     });
 
-    function updateUI(title, p, st, img) {
+    function updateUI(title, p, st, img, listHtml) {
         if(!title) return;
         document.getElementById('gameTitle').innerText = title;
         document.getElementById('progressFill').style.width = p + "%";
         document.getElementById('statText').innerText = `${p}% — Трофеи: ${st}`;
         if (img) {
-            const icon = document.getElementById('gameIcon');
-            icon.src = img;
-            icon.style.display = 'block';
+            document.getElementById('gameIcon').src = img;
+            document.getElementById('gameIcon').style.display = 'block';
             document.getElementById('mainBanner').style.backgroundImage = `url(${img})`;
         }
+        if (listHtml) document.getElementById('trophyList').innerHTML = listHtml;
     }
 </script>
 </body>
