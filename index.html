@@ -4,89 +4,113 @@
     <meta charset="UTF-8">
     <title>Trophy Tracker Pro - Full Profile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    
     <style>
-
         :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #121212; --green: #4caf50; --accent: #00aaff; }
-body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-.container { max-width: 900px; margin: 0 auto; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
 
-/* Шапка профиля */
-.header { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
-.nav-bar { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
-.nav-link { color: #888; text-decoration: none; font-size: 13px; text-transform: uppercase; font-weight: bold; }
-.nav-link.active { color: var(--green); }
+        /* Шапка профиля */
+        .header { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
+        .nav-bar { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .nav-link { color: #888; text-decoration: none; font-size: 13px; text-transform: uppercase; font-weight: bold; }
+        .nav-link.active { color: var(--green); }
 
-/* Кнопки управления */
-.top-btn { background: #333; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; }
-.top-btn:hover { background: #444; }
-.exit-btn { background: #d32f2f; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        /* Кнопки управления */
+        .top-btn { background: #333; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+        .top-btn:hover { background: #444; }
+        .exit-btn { background: #d32f2f; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
 
-/* Инфо блок */
-.profile-main { display: flex; justify-content: space-between; align-items: flex-start; }
-.nickname { color: var(--green); font-size: 28px; font-weight: bold; margin-left: 10px; }
+        /* Инфо блок */
+        .profile-main { display: flex; justify-content: space-between; align-items: flex-start; }
+        .nickname { color: var(--green); font-size: 28px; font-weight: bold; margin-left: 10px; }
 
-/* Достижения */
-.achievements-row { display: flex; gap: 10px; margin: 15px 0; }
-.ach-item { background: #1a1a1a; padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; color: #888; border: 1px solid #333; font-size: 14px; }
-.ach-item.active { border-color: #ffd700; color: #fff; background: #221f10; }
+        /* Достижения */
+        .achievements-row { display: flex; gap: 10px; margin: 15px 0; }
+        .ach-item { background: #1a1a1a; padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; color: #888; border: 1px solid #333; font-size: 14px; }
+        .ach-item.active { border-color: #ffd700; color: #fff; background: #221f10; }
 
-/* Соцсети */
-.social-links { display: flex; gap: 8px; }
-.link-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid #333; color: #555; }
-.link-badge.active { border-color: var(--green); color: var(--green); }
+        /* Соцсети */
+        .social-links { display: flex; gap: 8px; }
+        .link-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid #333; color: #555; }
+        .link-badge.active { border-color: var(--green); color: var(--green); }
 
-/* Панель настроек */
-.settings-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
-.input-nick { background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; width: 200px; margin-right: 10px; }
+        /* Панель настроек */
+        .settings-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
+        .input-nick { background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; width: 200px; margin-right: 10px; }
 
-/* Баннер */
-.banner { background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--accent); cursor: pointer; position: relative; overflow: hidden; margin-top: 20px; }
-.bar { width: 100%; height: 10px; background: #222; border-radius: 5px; margin: 10px 0; }
-.fill { height: 100%; background: var(--accent); width: 0%; transition: 1s; }
+        /* Баннер и трофеи */
+        .banner { background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--accent); cursor: pointer; position: relative; overflow: hidden; margin-top: 20px; background-size: cover; background-position: center; }
+        .banner::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1; }
+        .bar { width: 100%; height: 10px; background: #222; border-radius: 5px; margin: 10px 0; position: relative; z-index: 2; }
+        .fill { height: 100%; background: var(--accent); width: 0%; transition: 1s; }
+        
+        .t-card { display: flex; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 5px; opacity: 0.5; border: 1px solid transparent; }
+        .t-card.won { opacity: 1; border-color: var(--ps-blue); }
+        .t-img { width: 50px; height: 50px; margin-right: 15px; border-radius: 4px; }
+        .t-info { display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div class="user-row">
+        <div class="nav-bar">
+            <a href="#" class="nav-link active">Профиль</a>
+            <a href="#" class="nav-link">Друзья</a>
+            <a href="#" class="nav-link">Карточки</a>
+            <a href="#" class="nav-link">Настройки</a>
+            <button class="top-btn" onclick="alert('ТОП игроков скоро появится!')">ТОП</button>
+            <button id="logoutBtn" class="exit-btn" style="display:none;" onclick="handleLogout()">Выйти</button>
+        </div>
+
+        <div class="profile-main">
             <div>
-                <h2 style="margin:0;">🏆 Профиль: <span id="userName" class="nickname">Гость</span></h2>
+                <div style="display:flex; align-items:center;">
+                    <span style="font-size:30px;">🏆</span>
+                    <span class="nickname" id="userName">Гость</span>
+                </div>
+                
+                <div class="achievements-row">
+                    <div id="ach_plat" class="ach-item"><span>🏆</span> Первая платина</div>
+                    <div id="ach_form" class="ach-item"><span>📝</span> Анкета заполнена</div>
+                </div>
+
+                <div class="social-links">
+                    <div id="link_google" class="link-badge">GOOGLE</div>
+                    <div id="link_discord" class="link-badge">DISCORD</div>
+                </div>
             </div>
+
             <div id="authContainer">
-                <button id="authBtn" class="btn" onclick="handleAuthClick()">Войти через Google</button>
-                <button id="logoutBtn" class="btn btn-logout" style="display:none;" onclick="handleLogout()">Выйти</button>
+                <button id="authBtn" class="top-btn" style="background:var(--ps-blue)" onclick="handleAuthClick()">Войти через Google</button>
+                <button class="top-btn" style="margin-top:10px; display:block;" onclick="toggleSettings()">⚙️ Настройки</button>
             </div>
         </div>
 
-        <div class="achievements-row">
-            <div id="ach_plat" class="ach-item"><i>🏆</i> Первая платина</div>
-            <div id="ach_form" class="ach-item"><i>📝</i> Анкета заполнена</div>
-        </div>
-
-        <div class="social-links">
-            <div id="link_google" class="link-badge">Google</div>
-            <div id="link_discord" class="link-badge">Discord</div>
+        <div id="settingsPanel" class="settings-box">
+            <h4 style="margin-top:0">Настройки профиля</h4>
+            <div style="display:flex">
+                <input type="text" id="newNickInput" class="input-nick" placeholder="Новый ник...">
+                <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">Сохранить</button>
+            </div>
         </div>
     </div>
 
     <div style="text-align: center; margin-bottom: 25px;">
-        <label class="btn" style="background: #2e7d32;">
-            📂 Выбрать Update.zip <input type="file" id="fileInput" accept=".zip" hidden>
+        <label class="top-btn" style="background: var(--green); padding: 10px 20px;">
+            📁 Выбрать Update.zip <input type="file" id="fileInput" accept=".zip" hidden>
         </label>
     </div>
 
     <div class="banner" id="mainBanner">
-        <img id="gameIcon" src="" class="game-icon" style="display:none">
-        <div style="flex-grow:1; z-index:2;">
+        <div style="position:relative; z-index:2;">
             <h2 id="gameTitle" style="margin:0">Загрузите данные...</h2>
             <div class="bar"><div id="progressFill" class="fill"></div></div>
             <span id="statText" style="font-size:14px; opacity:0.8">0% — Трофеи: 0/0</span>
         </div>
     </div>
 
-    <div id="trophyList"></div>
+    <div id="trophyList" style="margin-top:20px; display:none; flex-direction:column; gap:10px;"></div>
 </div>
 
 <script type="module">
@@ -94,7 +118,6 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; 
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Конфигурация Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
         authDomain: "bestrigyn-1d1c5.firebaseapp.com",
@@ -109,57 +132,66 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; 
     const db = getFirestore(app);
     let userUid = null;
 
-    // Глобальные функции для кнопок
-    window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(err => console.error(err));
+    window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
     window.handleLogout = () => signOut(auth).then(() => location.reload());
 
-    // Работа с IndexedDB (кэширование картинок)
+    window.toggleSettings = () => {
+        const p = document.getElementById('settingsPanel');
+        p.style.display = p.style.display === 'block' ? 'none' : 'block';
+    };
+
+    window.updateNickname = async () => {
+        const val = document.getElementById('newNickInput').value;
+        if (val && userUid) {
+            await setDoc(doc(db, "users", userUid), { customName: val }, { merge: true });
+            document.getElementById('userName').innerText = val;
+            toggleSettings();
+        }
+    };
+
+    // Слушатель входа
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            userUid = user.uid;
+            document.getElementById('authBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+            document.getElementById('link_google').classList.add('active');
+            document.getElementById('ach_form').classList.add('active');
+            
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists() && snap.data().customName) {
+                document.getElementById('userName').innerText = snap.data().customName;
+            } else {
+                document.getElementById('userName').innerText = user.displayName;
+            }
+            loadData();
+        }
+    });
+
+    // IndexedDB для кэша
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
         req.onsuccess = () => res(req.result);
     });
 
-    const saveImg = async (id, data) => {
-        const idb = await openDB();
-        idb.transaction("images", "readwrite").objectStore("images").put(data, id);
-    };
-
-    const getImg = async (id) => {
-        const idb = await openDB();
-        return new Promise(res => {
-            const req = idb.transaction("images").objectStore("images").get(id);
-            req.onsuccess = () => res(req.result);
-        });
-    };
-
-    // Слушатель состояния авторизации
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            userUid = user.uid;
-            document.getElementById('authBtn').style.display = 'none';
-            document.getElementById('logoutBtn').style.display = 'block';
-            document.getElementById('userName').innerText = user.displayName;
-            document.getElementById('link_google').classList.add('active');
-            document.getElementById('ach_form').classList.add('active');
-            loadData();
-        }
-    });
-
-    // Загрузка данных профиля из Firestore
     async function loadData() {
-        if (!userUid) return;
         const snap = await getDoc(doc(db, "users", userUid));
         if (snap.exists()) {
             const d = snap.data();
-            const cachedIcon = await getImg("main_icon");
-            const cachedList = await getImg("html_list");
-            updateUI(d.game, d.perc, d.stat, cachedIcon, cachedList);
-            if (d.perc === 100) document.getElementById('ach_plat').classList.add('active');
+            const idb = await openDB();
+            const cachedIcon = await new Promise(r => {
+                const req = idb.transaction("images").objectStore("images").get("main_icon");
+                req.onsuccess = () => r(req.result);
+            });
+            const cachedHtml = await new Promise(r => {
+                const req = idb.transaction("images").objectStore("images").get("html_list");
+                req.onsuccess = () => r(req.result);
+            });
+            updateUI(d.game, d.perc, d.stat, cachedIcon, cachedHtml);
         }
     }
 
-    // Обработка ZIP-файла с трофеями
     document.getElementById('fileInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file || !userUid) return;
@@ -169,14 +201,11 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; 
         for (let path in zip.files) {
             const name = path.split('/').pop().toUpperCase();
             if (name === 'TROP.XML') xmlData = await zip.files[path].async("string");
-            if (name.endsWith('.PNG')) {
-                icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
-            }
+            if (name.endsWith('.PNG')) icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
         }
 
         if (xmlData) {
             const xml = new DOMParser().parseFromString(xmlData, "text/xml");
-            const title = xml.querySelector('title-name')?.textContent || "Game";
             const trophies = xml.querySelectorAll('trophy');
             let earned = 0, html = '';
 
@@ -189,32 +218,27 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; 
 
             const p = Math.round((earned / trophies.length) * 100);
             const st = `${earned}/${trophies.length}`;
+            const gameName = xml.querySelector('title-name')?.textContent || "Game";
             const mainIcon = icons['TROP000.PNG'] || "";
 
-            if (p === 100) document.getElementById('ach_plat').classList.add('active');
+            const idb = await openDB();
+            idb.transaction("images", "readwrite").objectStore("images").put(mainIcon, "main_icon");
+            idb.transaction("images", "readwrite").objectStore("images").put(html, "html_list");
 
-            await saveImg("main_icon", mainIcon);
-            await saveImg("html_list", html);
-            await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: st });
-            updateUI(title, p, st, mainIcon, html);
+            await setDoc(doc(db, "users", userUid), { game: gameName, perc: p, stat: st }, { merge: true });
+            updateUI(gameName, p, st, mainIcon, html);
         }
     });
 
-    // Обновление интерфейса
     function updateUI(title, p, st, img, html) {
         document.getElementById('gameTitle').innerText = title;
         document.getElementById('progressFill').style.width = p + "%";
         document.getElementById('statText').innerText = `${p}% — Трофеи: ${st}`;
-        if (img) {
-            const icon = document.getElementById('gameIcon');
-            icon.src = img;
-            icon.style.display = 'block';
-            document.getElementById('mainBanner').style.backgroundImage = `url(${img})`;
-        }
+        if (img) document.getElementById('mainBanner').style.backgroundImage = `url(${img})`;
         document.getElementById('trophyList').innerHTML = html || "";
+        if (p === 100) document.getElementById('ach_plat').classList.add('active');
     }
 
-    // Раскрытие списка трофеев по клику на баннер
     document.getElementById('mainBanner').onclick = () => {
         const list = document.getElementById('trophyList');
         list.style.display = list.style.display === 'flex' ? 'none' : 'flex';
