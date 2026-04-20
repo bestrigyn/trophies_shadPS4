@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Trophy Tracker Pro - Final</title>
+    <title>Trophy Tracker Pro - Final Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #121212; --green: #4caf50; --accent: #00aaff; }
@@ -20,7 +20,7 @@
         .exit-btn { background: #d32f2f; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
 
         /* Секции */
-        .section-achievements, #topSection { display: none; background: #111; padding: 20px; border-radius: 10px; margin-top: 15px; border: 1px dashed #444; }
+        .section-box { display: none; background: #111; padding: 20px; border-radius: 10px; margin-top: 15px; border: 1px solid #333; }
         .ach-row { display: flex; gap: 10px; flex-wrap: wrap; }
         .ach-item { background: #1a1a1a; padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; color: #888; border: 1px solid #333; font-size: 14px; }
         .ach-item.active { border-color: #ffd700; color: #fff; background: #221f10; }
@@ -35,6 +35,9 @@
         .bar { width: 100%; height: 10px; background: #222; border-radius: 5px; margin: 10px 0; position: relative; z-index: 2; }
         .fill { height: 100%; background: var(--accent); width: 0%; transition: 1s; }
         
+        /* Список ТОП */
+        .top-player-card { display: flex; justify-content: space-between; padding: 12px; background: #1a1a1a; border-radius: 8px; margin-bottom: 8px; border: 1px solid #222; }
+
         .t-card { display: flex; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 5px; opacity: 0.5; border: 1px solid transparent; }
         .t-card.won { opacity: 1; border-color: var(--ps-blue); }
         .t-img { width: 50px; height: 50px; margin-right: 15px; border-radius: 4px; }
@@ -64,33 +67,35 @@
             </div>
         </div>
 
-        <div id="achievementsSection" class="section-achievements">
+        <div id="achievementsSection" class="section-box">
             <h3 style="margin-top:0">Достижения сайта</h3>
             <div class="ach-row">
                 <div id="ach_plat" class="ach-item"><span>🏆</span> Первая платина</div>
                 <div id="ach_form" class="ach-item"><span>📝</span> Анкета заполнена</div>
             </div>
-            <button class="top-btn" style="margin-top:15px;" onclick="showSection('profile')">Назад</button>
+            <button class="top-btn" style="margin-top:15px;" onclick="showSection('profile')">← Назад</button>
         </div>
 
-        <div id="topSection">
-            <h3 style="margin-top:0">ТОП Игроков</h3>
-            <div style="padding:10px; border-bottom:1px solid #222;">1. bestrigyn — <span style="color:var(--green)">Online</span></div>
-            <button class="top-btn" style="margin-top:15px;" onclick="showSection('profile')">Назад</button>
+        <div id="topSection" class="section-box">
+            <h3 style="margin-top:0; color:var(--accent)">ТОП Игроков</h3>
+            <div id="topPlayersList">
+                <div style="color:#666">Загрузка данных...</div>
+            </div>
+            <button class="top-btn" style="margin-top:15px;" onclick="showSection('profile')">← Назад</button>
         </div>
 
         <div id="settingsPanel" class="settings-box">
             <h4 style="margin-top:0">Настройки</h4>
-            <input type="text" id="newNickInput" style="background:#222; border:1px solid #444; color:#fff; padding:8px; border-radius:4px;" placeholder="Новый ник...">
-            <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">Сохранить</button>
-            <div style="margin-top:15px;">
-                <small style="color:#666">СВЯЗАННЫЕ АККАУНТЫ:</small><br>
-                <div id="link_google" class="link-badge" style="margin-top:5px; display:inline-block;">GOOGLE AUTH</div>
+            <input type="text" id="newNickInput" style="background:#222; border:1px solid #444; color:#fff; padding:8px; border-radius:4px;" placeholder="Изменить ник...">
+            <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">ОК</button>
+            <div style="margin-top:15px; border-top: 1px solid #222; padding-top:10px;">
+                <small style="color:#666">ПОДКЛЮЧЕНИЯ:</small><br>
+                <div id="link_google" class="link-badge" style="margin-top:5px;">GOOGLE AUTH</div>
             </div>
         </div>
     </div>
 
-    <div style="text-align: center; margin-bottom: 20px;">
+    <div style="text-align: center; margin-bottom: 20px;" id="downloadArea">
         <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant" target="_blank" class="top-btn" style="background:var(--ps-blue); padding: 10px 20px; text-decoration:none; display:inline-block; margin-bottom:10px;">
             📥 Скачать ShadPS4 Assistant
         </a><br>
@@ -114,7 +119,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
@@ -130,18 +135,47 @@
     const db = getFirestore(app);
     let userUid = null;
 
+    // Навигация
     window.showSection = (name) => {
-        ['profileSection', 'achievementsSection', 'topSection', 'contentArea'].forEach(s => document.getElementById(s).style.display = 'none');
+        const sections = ['profileSection', 'achievementsSection', 'topSection', 'contentArea', 'downloadArea'];
+        sections.forEach(s => document.getElementById(s).style.display = 'none');
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
         if(name === 'profile') {
             document.getElementById('profileSection').style.display = 'block';
             document.getElementById('contentArea').style.display = 'block';
+            document.getElementById('downloadArea').style.display = 'block';
             document.getElementById('nav_profile').classList.add('active');
         } else if(name === 'ach') {
             document.getElementById('achievementsSection').style.display = 'block';
             document.getElementById('nav_ach').classList.add('active');
-        } else if(name === 'top') document.getElementById('topSection').style.display = 'block';
+        } else if(name === 'top') {
+            document.getElementById('topSection').style.display = 'block';
+            loadTopPlayers(); 
+        }
     };
+
+    // Динамическая загрузка ТОПа
+    async function loadTopPlayers() {
+        const listDiv = document.getElementById('topPlayersList');
+        listDiv.innerHTML = '<div style="color:#666">Загрузка игроков из базы...</div>';
+        try {
+            const q = query(collection(db, "users"), limit(20));
+            const snap = await getDocs(q);
+            let html = '';
+            let i = 1;
+            snap.forEach(doc => {
+                const d = doc.data();
+                html += `
+                    <div class="top-player-card">
+                        <span><b>${i}.</b> ${d.customName || 'Аноним'}</span>
+                        <span style="color:#888; font-size:12px;">${d.game || 'Нет игры'} (${d.perc || 0}%)</span>
+                    </div>`;
+                i++;
+            });
+            listDiv.innerHTML = html || 'Игроков пока нет.';
+        } catch(e) { listDiv.innerHTML = 'Ошибка загрузки ТОПа.'; }
+    }
 
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
     window.handleLogout = () => signOut(auth).then(() => location.reload());
@@ -172,7 +206,7 @@
         }
     });
 
-    // Логика ZIP и IndexedDB без изменений
+    // IndexedDB и ZIP логика
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
