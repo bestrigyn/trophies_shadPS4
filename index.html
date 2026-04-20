@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Trophy Tracker Pro</title>
+    <title>Trophy Tracker Pro - Bestrigyn</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #161616; --green: #4caf50; --gray: #444; }
@@ -16,21 +16,18 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        input[type="text"] { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; box-sizing: border-box; }
+        input[type="text"], textarea { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; box-sizing: border-box; font-family: monospace; }
         
-        /* ТЕГИ СОЦСЕТЕЙ */
-        .social-tags { display: flex; gap: 5px; }
-        .tag-status { padding: 4px 10px; background: #111; border: 2px solid var(--gray); border-radius: 20px; font-size: 12px; color: #aaa; font-weight: bold; cursor: default; }
+        .tag-status { padding: 4px 10px; background: #111; border: 2px solid var(--gray); border-radius: 20px; font-size: 12px; color: #aaa; font-weight: bold; }
         .tag-status.unlocked { border-color: var(--green); color: var(--green); }
 
-        /* ТРОФЕИ АКАУНТА */
         .account-trophies { display: flex; gap: 10px; margin-top: 10px; }
         .acc-t { width: 100px; padding: 15px 5px; background: #111; border-radius: 10px; text-align: center; font-size: 11px; color: #555; border: 2px solid transparent; }
         .acc-t b { font-size: 20px; display: block; filter: grayscale(1); }
         .acc-t.unlocked { border-color: gold; color: #fff; background: #1a1a00; }
         .acc-t.unlocked b { filter: grayscale(0); }
 
-        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; text-decoration: none; display: inline-block; }
         .btn:hover { opacity: 0.9; }
 
         .banner { background: #111; padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #00aaff; position: relative; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.7); min-height: 120px; }
@@ -40,10 +37,8 @@
         .leader-item { padding: 12px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .leader-item.me { background: #1a2a1a; border-left: 4px solid var(--green); }
 
-        #trophyList { margin-top: 20px; display: none; flex-direction: column; gap: 8px; }
-        .t-card { background: var(--card); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 15px; border-left: 5px solid #333; }
-        .t-card.won { border-left-color: var(--green); }
-        .t-img { width: 50px; height: 50px; border-radius: 5px; }
+        .download-footer { margin-top: 30px; text-align: center; padding: 20px; border-top: 1px solid #333; color: #888; font-size: 14px; }
+        .code-box { background: #000; padding: 10px; border-radius: 5px; margin-top: 10px; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -62,54 +57,67 @@
 
     <div id="leaderboardSection" class="content-panel">
         <h3 style="margin-top:0">🏆 Топ игроков</h3>
-        <div id="leaderboardList">Войдите, чтобы увидеть список...</div>
+        <div id="leaderboardList">Загрузка...</div>
     </div>
 
     <div id="profileSection" class="content-panel">
-        <h3 style="margin-top:0">Профиль</h3>
+        <h3 style="margin-top:0">Настройки профиля</h3>
         <div class="profile-grid">
             <div>
-                <label>Отображаемый ник</label><br>
-                <input type="text" id="profNick" placeholder="Твой ник..."><br><br>
+                <label>Ваш ник</label><br>
+                <input type="text" id="profNick" placeholder="Никнейм..."><br><br>
                 <label>Пол:</label>
                 <input type="radio" name="gender" value="M" id="gM"> М 
                 <input type="radio" name="gender" value="F" id="gF"> Ж
                 <br><br>
-                <button class="btn" onclick="saveProfileData()">Сохранить профиль</button>
+                <button class="btn" onclick="saveProfileData()">Сохранить изменения</button>
+                
+                <h4 style="margin-bottom:10px;">Код для форумов (BBCode)</h4>
+                <div class="code-box">
+                    <textarea id="bbCodeField" rows="2" readonly>[URL=https://bestrigyn.github.io][IMG]https://bestrigyn.github.io/card.png[/IMG][/URL]</textarea>
+                </div>
             </div>
             <div>
-                <label>Статус аккаунта:</label>
+                <label>Статус:</label>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px 0;">
-                    <span style="color:#aaa; font-size: 14px;">Привязка аккаунта</span>
+                    <span style="color:#aaa;">Привязка аккаунта</span>
                     <span id="accountLinkedTag" class="tag-status">Не привязан</span>
                 </div>
-                <div class="social-tags" style="margin-bottom:20px;">
+                <div style="margin-bottom:20px;">
                     <span id="googleTag" class="tag-status">GOOGLE</span>
                 </div>
 
                 <label>Достижения аккаунта:</label>
                 <div class="account-trophies">
                     <div id="accT1" class="acc-t"><b>🏆</b>Первая платина</div>
-                    <div id="accT2" class="acc-t"><b>👤</b>Профиль заполнен</div>
+                    <div id="accT2" class="acc-t"><b>👤</b>Анкета заполнена</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div style="text-align:center; margin-bottom: 20px;">
-        <label class="btn">📂 Загрузить ZIP <input type="file" id="fileInput" accept=".zip" hidden></label>
+        <label class="btn" style="background:#28a745">📂 Загрузить Update.zip <input type="file" id="fileInput" accept=".zip" hidden></label>
     </div>
 
     <div class="banner" id="mainBanner" onclick="toggleSection('trophyList')">
         <img id="gameIcon" style="width:100px; height:100px; border-radius:10px; display:none; object-fit:cover;">
         <div style="flex-grow:1; z-index:2">
-            <h2 id="gameTitle" style="margin:0">Ожидание ZIP...</h2>
+            <h2 id="gameTitle" style="margin:0">Ожидание данных...</h2>
             <div class="bar"><div id="progressFill" class="fill"></div></div>
             <span id="statText">0% — Трофеи: 0/0</span>
         </div>
     </div>
 
-    <div id="trophyList"></div>
+    <div id="trophyList" style="display:none; flex-direction:column; gap:8px; margin-top:20px;"></div>
+
+    <div class="download-footer">
+        <p>Хотите обновлять автоматически?</p>
+        <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant" class="btn" target="_blank">
+            📥 Скачать ShadPS4 Assistant
+        </a>
+        <p style="margin-top:15px; font-size:12px;">Версия 1.0.0 | Разработано для сообщества shadPS4</p>
+    </div>
 </div>
 
 <script type="module">
@@ -131,7 +139,7 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // Кэш (IndexedDB)
+    // Кэш картинок
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
@@ -155,13 +163,10 @@
             userUid = user.uid;
             document.getElementById('authBtn').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
-            
-            // Теги привязки: если вошел через Google, оба горят зеленым
             document.getElementById('googleTag').classList.add('unlocked');
             const linkTag = document.getElementById('accountLinkedTag');
             linkTag.innerText = "Привязан";
             linkTag.classList.add('unlocked');
-
             await loadData();
             await loadLeaderboard();
         }
@@ -179,14 +184,8 @@
         const nick = document.getElementById('profNick').value;
         const gen = document.querySelector('input[name="gender"]:checked')?.value;
         if(!nick) return alert("Введите ник");
-        
-        await setDoc(doc(db, "users", userUid), { 
-            username: nick, 
-            gender: gen, 
-            sys_t2: (!!nick && !!gen) 
-        }, { merge: true });
-        
-        alert("Профиль сохранен!");
+        await setDoc(doc(db, "users", userUid), { username: nick, gender: gen, sys_t2: (!!nick && !!gen) }, { merge: true });
+        alert("Профиль обновлен!");
         loadData();
     };
 
@@ -194,14 +193,12 @@
         const snap = await getDoc(doc(db, "users", userUid));
         if (snap.exists()) {
             const d = snap.data();
-            document.getElementById('userName').innerText = d.username || auth.currentUser.displayName;
+            document.getElementById('userName').innerText = d.username || "Игрок";
             document.getElementById('profNick').value = d.username || "";
             if(d.gender === "M") document.getElementById('gM').checked = true;
             if(d.gender === "F") document.getElementById('gF').checked = true;
-            
             if(d.perc === 100) document.getElementById('accT1').classList.add('unlocked');
             if(d.sys_t2) document.getElementById('accT2').classList.add('unlocked');
-            
             const cachedIcon = await getImg("main_icon");
             const cachedList = await getImg("html_list");
             updateUI(d.game, d.perc, d.stat, cachedIcon, cachedList);
@@ -211,23 +208,19 @@
     async function loadLeaderboard() {
         const list = document.getElementById('leaderboardList');
         try {
-            // ФИНАЛЬНЫЙ ЗАПРОС С СОРТИРОВКОЙ
             const q = query(collection(db, "users"), orderBy("perc", "desc"), limit(20));
             const snap = await getDocs(q);
             let html = "";
             snap.forEach(u => {
                 const data = u.data();
-                const isMe = u.id === userUid;
-                html += `
-                <div class="leader-item ${isMe?'me':''}">
+                html += `<div class="leader-item ${u.id === userUid ? 'me' : ''}">
                     <span>${data.username || 'Аноним'}</span>
                     <span style="font-size: 13px; color: #888;">${data.game || '---'} <b>(${data.perc || 0}%)</b></span>
                 </div>`;
             });
-            list.innerHTML = html || "В базе пока никого нет";
+            list.innerHTML = html || "Список пуст";
         } catch (e) {
-            console.error(e);
-            list.innerHTML = "Для сортировки создайте индекс в Firebase Console.";
+            list.innerHTML = "Ошибка доступа к базе данных.";
         }
     }
 
@@ -236,36 +229,31 @@
         if (!file || !userUid) return;
         const zip = await JSZip.loadAsync(file);
         let xmlData = null, icons = {};
-        
         for (let path in zip.files) {
             const name = path.split('/').pop().toUpperCase();
             if (name === 'TROP.XML') xmlData = await zip.files[path].async("string");
             if (name.endsWith('.PNG')) icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
         }
-
         if (xmlData) {
             const xml = new DOMParser().parseFromString(xmlData, "text/xml");
             const trophies = xml.querySelectorAll('trophy');
             let earned = 0, tHtml = "";
-            
             trophies.forEach(t => {
                 const won = t.getAttribute('unlockstate') === "true";
                 if(won) earned++;
                 const tid = String(t.getAttribute('id')).padStart(3, '0');
                 const img = icons[`TROP${tid}.PNG`] || "";
-                tHtml += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div><b>${t.querySelector('name').textContent}</b><br><small>${t.querySelector('detail').textContent}</small></div></div>`;
+                tHtml += `<div style="background:var(--card); padding:10px; border-radius:8px; display:flex; align-items:center; gap:15px; border-left:5px solid ${won?'var(--green)':'#333'}">
+                    <img src="${img}" style="width:50px; height:50px; border-radius:5px;">
+                    <div><b>${t.querySelector('name').textContent}</b><br><small style="color:#aaa">${t.querySelector('detail').textContent}</small></div>
+                </div>`;
             });
-
             const p = Math.round((earned / trophies.length) * 100);
-            const title = xml.querySelector('title-name')?.textContent || "Game";
-            const statText = `${earned}/${trophies.length}`;
-
+            const title = xml.querySelector('title-name')?.textContent || "Игра";
             await saveImg("main_icon", icons['TROP000.PNG'] || "");
             await saveImg("html_list", tHtml);
-            
-            await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: statText }, { merge: true });
+            await setDoc(doc(db, "users", userUid), { game: title, perc: p, stat: `${earned}/${trophies.length}` }, { merge: true });
             loadData();
-            alert("Данные загружены!");
         }
     });
 
