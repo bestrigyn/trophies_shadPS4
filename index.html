@@ -12,23 +12,27 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); padding: 15px 25px; border-radius: 12px; border: 1px solid #333; }
         #userName { color: var(--green); font-weight: bold; cursor: pointer; text-decoration: underline; }
 
-        .content-panel { display: none; background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--gray); }
+        .content-panel { display: none; background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--gray); animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* ПРОФИЛЬ */
         .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        input[type="text"] { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; }
+        input[type="text"] { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; box-sizing: border-box; }
         
-        /* СИСТЕМНЫЕ ТРОФЕИ */
         .system-trophies { display: flex; gap: 10px; margin-top: 10px; }
-        .sys-t { width: 100px; padding: 15px 5px; background: #111; border-radius: 10px; border: 1px solid #222; text-align: center; font-size: 11px; color: #555; transition: 0.3s; }
+        .sys-t { width: 100px; padding: 15px 5px; background: #111; border-radius: 10px; border: 1px solid #222; text-align: center; font-size: 11px; color: #555; }
         .sys-t b { font-size: 20px; display: block; margin-bottom: 5px; filter: grayscale(1); }
         .sys-t.unlocked { border-color: gold; color: #fff; background: #1a1a00; }
         .sys-t.unlocked b { filter: grayscale(0); }
 
         .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-red { background: #d32f2f; font-size: 11px; padding: 5px 10px; margin-top: 10px; }
+
         .banner { background: #111; padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #00aaff; position: relative; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.7); }
         .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 10px 0; overflow: hidden; }
-        .fill { height: 100%; background: #00aaff; width: 0%; transition: 1s; }
+        .fill { height: 100%; background: #00aaff; width: 0%; transition: 1s cubic-bezier(0.1, 0.7, 0.1, 1); }
+
+        .leader-item { padding: 12px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .leader-item.me { background: #1a2a1a; border-left: 4px solid var(--green); }
 
         #trophyList { margin-top: 20px; display: none; flex-direction: column; gap: 8px; }
         .t-card { background: var(--card); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 15px; border-left: 5px solid #333; }
@@ -50,8 +54,8 @@
     </div>
 
     <div id="leaderboardSection" class="content-panel">
-        <h3 style="margin-top:0">Топ игроков</h3>
-        <div id="leaderboardList">Загрузка...</div>
+        <h3 style="margin-top:0">🏆 Топ игроков</h3>
+        <div id="leaderboardList">Загрузка списка...</div>
     </div>
 
     <div id="profileSection" class="content-panel">
@@ -59,12 +63,14 @@
         <div class="profile-grid">
             <div>
                 <label>Никнейм</label><br>
-                <input type="text" id="profNick" placeholder="Ник..."><br><br>
+                <input type="text" id="profNick" placeholder="Твой ник..."><br><br>
                 <label>Пол:</label>
                 <input type="radio" name="gender" value="M" id="gM"> М 
                 <input type="radio" name="gender" value="F" id="gF"> Ж
                 <br><br>
                 <button class="btn" onclick="saveProfileData()">Сохранить</button>
+                <br>
+                <button class="btn btn-red" onclick="resetCache()">Сбросить кэш картинок</button>
             </div>
             <div>
                 <label>Достижения аккаунта:</label>
@@ -77,13 +83,13 @@
     </div>
 
     <div style="text-align:center; margin-bottom: 20px;">
-        <label class="btn">📂 Обновить Update.zip <input type="file" id="fileInput" accept=".zip" hidden></label>
+        <label class="btn">📂 Загрузить Update.zip <input type="file" id="fileInput" accept=".zip" hidden></label>
     </div>
 
     <div class="banner" id="mainBanner" onclick="toggleSection('trophyList')">
-        <img id="gameIcon" style="width:100px; height:100px; border-radius:10px; display:none">
-        <div style="flex-grow:1">
-            <h2 id="gameTitle" style="margin:0">Нет данных</h2>
+        <img id="gameIcon" style="width:100px; height:100px; border-radius:10px; display:none; object-fit:cover;">
+        <div style="flex-grow:1; z-index:2">
+            <h2 id="gameTitle" style="margin:0">Ожидание ZIP...</h2>
             <div class="bar"><div id="progressFill" class="fill"></div></div>
             <span id="statText">0% — Трофеи: 0/0</span>
         </div>
@@ -111,20 +117,26 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // --- ОЧИСТКА КЭША ПРИ КАЖДОМ ЗАПУСКЕ (ДЛЯ ТЕСТОВ) ---
-    async function clearImageCache() {
-        return new Promise(res => {
-            const req = indexedDB.deleteDatabase("TrophyCache");
-            req.onsuccess = () => { console.log("Кэш очищен"); res(); };
-        });
-    }
-    await clearImageCache();
-
+    // Работа с кэшем
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
         req.onsuccess = () => res(req.result);
     });
+
+    window.resetCache = async () => {
+        const req = indexedDB.deleteDatabase("TrophyCache");
+        req.onsuccess = () => { alert("Кэш очищен. Перезагрузите страницу."); location.reload(); };
+    };
+
+    const saveImg = async (id, data) => { (await openDB()).transaction("images", "readwrite").objectStore("images").put(data, id); };
+    const getImg = async (id) => {
+        const idb = await openDB();
+        return new Promise(res => {
+            const req = idb.transaction("images").objectStore("images").get(id);
+            req.onsuccess = () => res(req.result);
+        });
+    };
 
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
     window.handleLogout = () => signOut(auth).then(() => location.reload());
@@ -152,16 +164,22 @@
         const gen = document.querySelector('input[name="gender"]:checked')?.value;
         if(!nick) return alert("Введите ник");
         
-        await setDoc(doc(db, "users", userUid), { username: nick, gender: gen, sys_t2: (!!nick && !!gen) }, { merge: true });
-        alert("Сохранено!");
-        location.reload();
+        await setDoc(doc(db, "users", userUid), { 
+            username: nick, 
+            gender: gen, 
+            sys_t2: (!!nick && !!gen) 
+        }, { merge: true });
+        
+        alert("Профиль обновлен!");
+        loadData();
+        loadLeaderboard();
     };
 
     async function loadData() {
         const snap = await getDoc(doc(db, "users", userUid));
         if (snap.exists()) {
             const d = snap.data();
-            document.getElementById('userName').innerText = d.username || "Игрок";
+            document.getElementById('userName').innerText = d.username || auth.currentUser.displayName;
             document.getElementById('profNick').value = d.username || "";
             if(d.gender === "M") document.getElementById('gM').checked = true;
             if(d.gender === "F") document.getElementById('gF').checked = true;
@@ -169,28 +187,38 @@
             if(d.perc === 100) document.getElementById('sysT1').classList.add('unlocked');
             if(d.sys_t2) document.getElementById('sysT2').classList.add('unlocked');
             
-            updateUI(d.game, d.perc, d.stat);
+            const cachedIcon = await getImg("main_icon");
+            updateUI(d.game, d.perc, d.stat, cachedIcon);
         }
     }
 
     async function loadLeaderboard() {
         const list = document.getElementById('leaderboardList');
         try {
-            const q = query(collection(db, "users"), orderBy("perc", "desc"), limit(10));
-            const snap = await getDocs(q);
+            // Пытаемся загрузить с сортировкой
+            let q = query(collection(db, "users"), orderBy("perc", "desc"), limit(10));
+            let snap;
+            try {
+                snap = await getDocs(q);
+            } catch (err) {
+                console.warn("Индекс еще не готов, грузим без сортировки");
+                q = query(collection(db, "users"), limit(10));
+                snap = await getDocs(q);
+            }
+
             let html = "";
-            let i = 1;
             snap.forEach(u => {
                 const data = u.data();
                 const isMe = u.id === userUid;
-                html += `<div style="padding:10px; border-bottom:1px solid #333; ${isMe?'color:var(--green); font-weight:bold':''}">
-                    ${i++}. ${data.username || 'Аноним'} — ${data.game || '---'} (${data.perc || 0}%)
+                html += `
+                <div class="leader-item ${isMe?'me':''}">
+                    <span>${data.username || 'Аноним'}</span>
+                    <span style="font-size: 13px; color: #888;">${data.game || '---'} <b>(${data.perc || 0}%)</b></span>
                 </div>`;
             });
-            list.innerHTML = html || "Список пуст";
+            list.innerHTML = html || "В базе пока никого нет";
         } catch (e) {
-            console.error(e);
-            list.innerHTML = "Ошибка загрузки или создайте ник в профиле";
+            list.innerHTML = "Ошибка доступа к базе данных.";
         }
     }
 
@@ -212,20 +240,33 @@
             trophies.forEach(t => { if(t.getAttribute('unlockstate') === "true") earned++; });
             const p = Math.round((earned / trophies.length) * 100);
             
+            const title = xml.querySelector('title-name')?.textContent || "Game";
+            const statText = `${earned}/${trophies.length}`;
+
+            await saveImg("main_icon", iconBase64);
             await setDoc(doc(db, "users", userUid), { 
-                game: xml.querySelector('title-name')?.textContent || "Game", 
+                game: title, 
                 perc: p, 
-                stat: `${earned}/${trophies.length}` 
+                stat: statText 
             }, { merge: true });
-            location.reload();
+
+            updateUI(title, p, statText, iconBase64);
+            loadLeaderboard();
+            alert("Данные успешно загружены!");
         }
     });
 
-    function updateUI(title, p, st) {
+    function updateUI(title, p, st, img) {
         if(!title) return;
         document.getElementById('gameTitle').innerText = title;
         document.getElementById('progressFill').style.width = p + "%";
         document.getElementById('statText').innerText = `${p}% — Трофеи: ${st}`;
+        if (img) {
+            const icon = document.getElementById('gameIcon');
+            icon.src = img;
+            icon.style.display = 'block';
+            document.getElementById('mainBanner').style.backgroundImage = `url(${img})`;
+        }
     }
 </script>
 </body>
