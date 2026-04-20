@@ -12,39 +12,35 @@
         /* ШАПКА */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); padding: 15px 25px; border-radius: 12px; border: 1px solid #333; }
         .user-info { display: flex; align-items: center; gap: 15px; }
-        #userName { color: var(--green); font-weight: bold; cursor: pointer; text-decoration: underline; transition: 0.2s; }
-        #userName:hover { opacity: 0.8; }
+        #userName { color: var(--green); font-weight: bold; cursor: pointer; text-decoration: underline; }
 
-        /* ПАНЕЛИ (ПРОФИЛЬ, ЛИДЕРБОРД) */
-        .content-panel { display: none; background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--gray); animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ПАНЕЛИ */
+        .content-panel { display: none; background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--gray); }
 
         /* ПРОФИЛЬ */
         .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; color: #aaa; font-size: 14px; }
         input[type="text"] { width: 100%; padding: 10px; background: #222; border: 1px solid var(--gray); color: #fff; border-radius: 5px; box-sizing: border-box; }
         
-        .social-tag { display: inline-block; padding: 5px 12px; border-radius: 20px; border: 2px solid var(--gray); color: var(--gray); font-size: 12px; font-weight: bold; margin-right: 5px; }
+        .social-tag { display: inline-block; padding: 5px 12px; border-radius: 20px; border: 2px solid var(--gray); color: var(--gray); font-size: 12px; font-weight: bold; }
         .social-tag.active { border-color: var(--green); color: var(--green); }
 
         /* СИСТЕМНЫЕ ТРОФЕИ */
-        .system-trophies { margin-top: 15px; display: flex; gap: 10px; }
-        .sys-t { padding: 10px; background: #222; border-radius: 8px; border: 1px solid #333; font-size: 12px; opacity: 0.4; filter: grayscale(1); }
-        .sys-t.unlocked { opacity: 1; filter: grayscale(0); border-color: gold; }
+        .system-trophies { display: flex; gap: 10px; }
+        .sys-t { padding: 10px; background: #222; border-radius: 8px; border: 1px solid #333; font-size: 12px; opacity: 0.3; filter: grayscale(1); transition: 0.3s; }
+        .sys-t.unlocked { opacity: 1; filter: grayscale(0); border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
 
-        /* ОСТАЛЬНОЕ */
-        .pc-download { background: #1a1a1a; border: 1px dashed #00aaff; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; font-size: 14px; }
-        .pc-download a { color: #00aaff; text-decoration: none; font-weight: bold; }
-        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn:hover { opacity: 0.8; }
+        /* КНОПКИ */
+        .btn { background: var(--ps-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-logout { background: #d32f2f; font-size: 12px; padding: 5px 10px; }
 
-        .banner { background-color: #111; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.6); padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #00aaff; position: relative; overflow: hidden; }
-        .game-icon { width: 110px; height: 110px; border-radius: 12px; object-fit: cover; z-index: 2; background: #000; border: 2px solid rgba(255,255,255,0.2); }
+        /* БАННЕР */
+        .banner { background-color: #111; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.6); padding: 30px 25px; border-radius: 15px; display: flex; align-items: center; gap: 20px; cursor: pointer; border: 1px solid #00aaff; position: relative; }
+        .game-icon { width: 110px; height: 110px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); }
         .bar { width: 100%; height: 14px; background: rgba(0,0,0,0.6); border-radius: 7px; margin: 12px 0; overflow: hidden; }
         .fill { height: 100%; background: linear-gradient(90deg, #00aaff, #00439c); transition: 1.5s; }
 
+        /* СПИСОК ТРОФЕЕВ (СКРЫТ) */
         #trophyList { margin-top: 20px; display: none; flex-direction: column; gap: 8px; }
         .t-card { background: var(--card); padding: 12px 20px; border-radius: 8px; display: flex; align-items: center; gap: 20px; border-left: 6px solid #444; }
         .t-card.won { border-left-color: var(--green); background: #1b241b; }
@@ -57,7 +53,7 @@
     <div class="header">
         <div class="user-info">
             <h2 style="margin:0;">🏆</h2>
-            <span id="userName" onclick="toggleSection('profileSection')">Войти в профиль</span>
+            <span id="userName" onclick="toggleSection('profileSection')">Войти</span>
         </div>
         <div style="display: flex; gap: 10px;">
             <button id="topBtn" class="btn" style="background:#444" onclick="toggleSection('leaderboardSection')">ТОП</button>
@@ -67,12 +63,12 @@
     </div>
 
     <div id="profileSection" class="content-panel">
-        <h3>Настройки профиля</h3>
+        <h3>Мой профиль</h3>
         <div class="profile-grid">
             <div>
                 <div class="input-group">
-                    <label>Публичный Никнейм</label>
-                    <input type="text" id="profNick" placeholder="Введите ник...">
+                    <label>Никнейм</label>
+                    <input type="text" id="profNick" placeholder="Как вас называть?">
                 </div>
                 <div class="input-group">
                     <label>Пол</label>
@@ -80,31 +76,24 @@
                     <input type="radio" name="gender" value="F" id="gF" style="margin-left:15px"> Ж
                 </div>
                 <div class="input-group">
-                    <label>Привязки (скрыто от других)</label>
+                    <label>Аккаунты</label>
                     <span id="tagGoogle" class="social-tag">GOOGLE</span>
-                    <span id="tagDiscord" class="social-tag">DISCORD</span>
                 </div>
-                <button class="btn" onclick="saveProfileData()">Сохранить изменения</button>
+                <button class="btn" onclick="saveProfileData()">Сохранить</button>
             </div>
             <div>
-                <label>Системные трофеи:</label>
+                <label>Достижения аккаунта:</label>
                 <div class="system-trophies">
-                    <div id="sysT1" class="sys-t">🏆<br>Первая платина</div>
-                    <div id="sysT2" class="sys-t">👤<br>Анкета заполнена</div>
+                    <div id="sysT1" class="sys-t">🏅<br>Первая платина</div>
+                    <div id="sysT2" class="sys-t">📝<br>Анкета заполнена</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="leaderboardSection" class="content-panel">
-        <h3>Таблица лидеров</h3>
-        <div id="leaderboardList">
-            <div style="padding:10px; opacity:0.6">Загрузка топа...</div>
-        </div>
-    </div>
-
-    <div class="pc-download">
-        Хотите обновлять автоматически? <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant">Скачать ShadPS4 Assistant</a>
+        <h3>Топ игроков</h3>
+        <div id="leaderboardList"></div>
     </div>
 
     <div class="upload-wrapper" style="text-align:center; margin-bottom: 20px;">
@@ -113,10 +102,10 @@
 
     <div class="banner" id="mainBanner">
         <img id="gameIcon" src="" class="game-icon" style="display:none">
-        <div class="progress-box" style="flex-grow:1; z-index:2">
-            <h2 id="gameTitle" style="margin:0">Ожидание данных...</h2>
+        <div style="flex-grow:1; z-index:2">
+            <h2 id="gameTitle" style="margin:0">Ожидание...</h2>
             <div class="bar"><div id="progressFill" class="fill" style="width: 0%"></div></div>
-            <span id="statText">Загрузите архив для начала</span>
+            <span id="statText">Загрузите ZIP с трофеями</span>
         </div>
     </div>
 
@@ -126,7 +115,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDqIXZYcIST9QAD72WzgapVJtWfiEj0lqI",
@@ -141,19 +130,15 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     let userUid = null;
+    let currentUserData = null;
 
-    // IndexedDB для кэша картинок
+    // Вспомогательные функции для кэша картинок
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
         req.onsuccess = () => res(req.result);
     });
-
-    const saveImg = async (id, data) => {
-        const idb = await openDB();
-        idb.transaction("images", "readwrite").objectStore("images").put(data, id);
-    };
-
+    const saveImg = async (id, data) => { (await openDB()).transaction("images", "readwrite").objectStore("images").put(data, id); };
     const getImg = async (id) => {
         const idb = await openDB();
         return new Promise(res => {
@@ -162,7 +147,6 @@
         });
     };
 
-    // АВТОРИЗАЦИЯ
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
     window.handleLogout = () => signOut(auth).then(() => location.reload());
 
@@ -171,55 +155,44 @@
             userUid = user.uid;
             document.getElementById('authBtn').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
-            document.getElementById('userName').innerText = user.displayName;
             document.getElementById('tagGoogle').classList.add('active');
             await loadData();
             await loadLeaderboard();
         }
     });
 
-    // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
     window.toggleSection = (id) => {
-        const sections = ['profileSection', 'leaderboardSection', 'trophyList'];
-        sections.forEach(s => {
+        ['profileSection', 'leaderboardSection', 'trophyList'].forEach(s => {
             const el = document.getElementById(s);
-            if (s === id) {
-                el.style.display = (el.style.display === 'none' || el.style.display === '') ? (s === 'trophyList' ? 'flex' : 'block') : 'none';
-            } else {
-                el.style.display = 'none';
-            }
+            if (s === id) el.style.display = (el.style.display === 'none' || el.style.display === '') ? (s === 'trophyList' ? 'flex' : 'block') : 'none';
+            else el.style.display = 'none';
         });
     };
 
-    // СОХРАНЕНИЕ ПРОФИЛЯ
     window.saveProfileData = async () => {
-        if (!userUid) return;
         const nick = document.getElementById('profNick').value;
         const gender = document.querySelector('input[name="gender"]:checked')?.value;
+        if(!nick) return alert("Введите ник!");
         
         const updates = { username: nick, gender: gender };
-        
-        // Логика системного трофея 2
-        if (nick && gender) {
-            updates["sys_t2"] = true;
-            document.getElementById('sysT2').classList.add('unlocked');
-        }
+        if (gender) updates.sys_t2 = true;
 
         await setDoc(doc(db, "users", userUid), updates, { merge: true });
-        document.getElementById('userName').innerText = nick || auth.currentUser.displayName;
-        alert("Данные сохранены!");
+        alert("Профиль сохранен!");
+        loadData();
+        loadLeaderboard();
     };
 
-    // ЗАГРУЗКА ДАННЫХ
     async function loadData() {
         const snap = await getDoc(doc(db, "users", userUid));
         if (snap.exists()) {
-            const d = snap.data();
+            currentUserData = snap.data();
+            const d = currentUserData;
+            document.getElementById('userName').innerText = d.username || auth.currentUser.displayName;
             document.getElementById('profNick').value = d.username || "";
             if (d.gender === "M") document.getElementById('gM').checked = true;
             if (d.gender === "F") document.getElementById('gF').checked = true;
             
-            // Статус системных трофеев
             if (d.perc === 100 || d.sys_t1) document.getElementById('sysT1').classList.add('unlocked');
             if (d.sys_t2) document.getElementById('sysT2').classList.add('unlocked');
 
@@ -229,65 +202,75 @@
         }
     }
 
-    // ТАБЛИЦА ЛИДЕРОВ (заглушка с чтением из базы)
     async function loadLeaderboard() {
-        const q = query(collection(db, "users"), limit(5));
-        const querySnapshot = await getDocs(q);
         const listEl = document.getElementById('leaderboardList');
+        listEl.innerHTML = "Загрузка...";
+        
+        const q = query(collection(db, "users"), orderBy("perc", "desc"), limit(10));
+        const snap = await getDocs(q);
+        
+        let users = [];
+        snap.forEach(d => users.push({id: d.id, ...d.data()}));
+
+        // Если тебя нет в списке (например, ты еще не в топ-10), добавим тебя вверх вручную
+        if (currentUserData && !users.find(u => u.id === userUid)) {
+            users.unshift({id: userUid, ...currentUserData});
+        }
+
         listEl.innerHTML = "";
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
+        users.forEach((u, index) => {
+            const isMe = u.id === userUid;
             const div = document.createElement('div');
-            div.style.cssText = "padding:10px; border-bottom:1px solid #333; cursor:pointer";
-            div.innerHTML = `⭐ ${data.username || 'Аноним'} — <b>${data.game || 'Нет игры'}</b> (${data.perc || 0}%)`;
-            div.onclick = () => alert("Профиль пользователя " + (data.username || 'Аноним') + " пока закрыт");
+            div.style.cssText = `padding:12px; border-bottom:1px solid #333; display:flex; justify-content:space-between; ${isMe ? 'background:#1a2a1a; border-left:4px solid var(--green);' : ''}`;
+            div.innerHTML = `
+                <span><b>${index + 1}.</b> ${u.username || 'Аноним'} ${isMe ? '(ВЫ)' : ''}</span>
+                <span style="color:var(--ps-blue)">${u.game || '---'} — ${u.perc || 0}%</span>
+            `;
             listEl.appendChild(div);
         });
     }
 
-    // ПАРСИНГ ZIP (твой оригинальный код)
     document.getElementById('fileInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file || !userUid) return;
         const zip = await JSZip.loadAsync(file);
         let xmlData = null, icons = {};
+        
         for (let path in zip.files) {
             const name = path.split('/').pop().toUpperCase();
             if (name === 'TROP.XML') xmlData = await zip.files[path].async("string");
-            if (name.endsWith('.PNG')) {
-                icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
-            }
+            if (name.endsWith('.PNG')) icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
         }
+
         if (xmlData) {
             const xml = new DOMParser().parseFromString(xmlData, "text/xml");
             const title = xml.querySelector('title-name')?.textContent || "Game";
             const trophies = xml.querySelectorAll('trophy');
             let earned = 0, html = '';
+            
             trophies.forEach(t => {
                 const won = t.getAttribute('unlockstate') === "true";
                 if (won) earned++;
                 const img = icons['TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG'] || "";
                 html += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div class="t-info"><b>${t.querySelector('name').textContent}</b><small>${t.querySelector('detail').textContent}</small></div></div>`;
             });
-            const p = Math.round((earned / trophies.length) * 100);
-            const st = `${earned}/${trophies.length}`;
-            const mainIcon = icons['TROP000.PNG'] || "";
 
-            const updates = { game: title, perc: p, stat: st };
+            const p = Math.round((earned / trophies.length) * 100);
+            const updates = { game: title, perc: p, stat: `${earned}/${trophies.length}` };
             if (p === 100) updates.sys_t1 = true;
 
-            await saveImg("main_icon", mainIcon);
+            await saveImg("main_icon", icons['TROP000.PNG'] || "");
             await saveImg("html_list", html);
             await setDoc(doc(db, "users", userUid), updates, { merge: true });
-            updateUI(title, p, st, mainIcon, html);
-            if (p === 100) document.getElementById('sysT1').classList.add('unlocked');
+            loadData();
+            loadLeaderboard();
         }
     });
 
     function updateUI(title, p, st, img, html) {
         document.getElementById('gameTitle').innerText = title || "Ожидание...";
-        document.getElementById('progressFill').style.width = p + "%";
-        document.getElementById('statText').innerText = `${p}% — Трофеи: ${st}`;
+        document.getElementById('progressFill').style.width = (p || 0) + "%";
+        document.getElementById('statText').innerText = `${p || 0}% — Трофеи: ${st || '0/0'}`;
         if (img) {
             const icon = document.getElementById('gameIcon');
             icon.src = img;
