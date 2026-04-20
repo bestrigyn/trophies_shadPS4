@@ -155,26 +155,36 @@
         }
     };
 
-    // Динамическая загрузка ТОПа
+    // Динамическая загрузка ТОПа (Исправленная версия)
     async function loadTopPlayers() {
         const listDiv = document.getElementById('topPlayersList');
         listDiv.innerHTML = '<div style="color:#666">Загрузка игроков из базы...</div>';
         try {
-            const q = query(collection(db, "users"), limit(20));
+            const q = query(collection(db, "users"), limit(50));
             const snap = await getDocs(q);
             let html = '';
             let i = 1;
+
             snap.forEach(doc => {
                 const d = doc.data();
+                // Если нет customName, пробуем взять displayName из Google
+                const name = d.customName || d.displayName || "Анонимный игрок";
+                // Если игры нет, пишем "Данные не загружены"
+                const gameInfo = d.game ? `${d.game} (${d.perc || 0}%)` : "Данные не загружены";
+
                 html += `
-                    <div class="top-player-card">
-                        <span><b>${i}.</b> ${d.customName || 'Аноним'}</span>
-                        <span style="color:#888; font-size:12px;">${d.game || 'Нет игры'} (${d.perc || 0}%)</span>
+                    <div class="top-player-card" style="display: flex; justify-content: space-between; padding: 12px; background: #1a1a1a; border-radius: 8px; margin-bottom: 8px; border: 1px solid #222;">
+                        <span><b>${i}.</b> ${name}</span>
+                        <span style="color:#888; font-size:12px;">${gameInfo}</span>
                     </div>`;
                 i++;
             });
-            listDiv.innerHTML = html || 'Игроков пока нет.';
-        } catch(e) { listDiv.innerHTML = 'Ошибка загрузки ТОПа.'; }
+
+            listDiv.innerHTML = html || '<div style="color:#666">Игроков пока нет.</div>';
+        } catch(e) { 
+            console.error(e);
+            listDiv.innerHTML = '<div style="color:#f44336">Ошибка загрузки ТОПа.</div>'; 
+        }
     }
 
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
