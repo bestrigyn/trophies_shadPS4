@@ -1,0 +1,34 @@
+# 🏆 shadPS4 Trophies Database
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/shadps4-emu/shadPS4/main/dist/shadPS4.png" width="100" alt="shadPS4 Logo">
+</p>
+
+## 📌 О проекте
+Этот репозиторий содержит базу данных и визуализацию трофеев для игр, запускаемых через эмулятор **shadPS4**. Здесь собирается информация о достижениях, их условиях и прогрессе совместимости.
+
+**🌐 Посмотреть сайт:** [https://bestrigyn.github.io/trophies_shadPS4/](https://bestrigyn.github.io/trophies_shadPS4/)
+
+---
+
+## 🚀 Текущий статус
+- [x] Настройка GitHub Pages
+- [x] Интеграция базы данных (index.html)
+- [ ] Оптимизация мобильной версии
+- [ ] Автоматическое обновление списка достижений
+
+## 🛠 Технологии
+* **HTML5 / CSS3** — интерфейс сайта.
+* **JavaScript** — логика фильтрации и отображения.
+* **GitHub Actions** — автоматический деплой.
+
+---
+
+## 🎮 Как это работает
+Проект визуализирует данные о трофеях, позволяя удобно отслеживать свои достижения вне консоли, используя открытые данные совместимости эмулятора.
+
+---
+
+## 🤝 Контакты
+* **Author:** [bestrigyn](https://github.com/bestrigyn)
+* **Project:** shadPS4 Community Support
