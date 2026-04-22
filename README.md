@@ -1,9 +1,6 @@
 # 🏆 shadPS4 Trophies Database
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/shadps4-emu/shadPS4/main/dist/img/shadPS4.png" width="100" alt="shadPS4 Logo">
-</p>
-
+ 
 ## 📌 О проекте
 Этот репозиторий содержит базу данных и визуализацию трофеев для игр, запускаемых через эмулятор **shadPS4**. Здесь собирается информация о достижениях, их условиях и прогрессе совместимости.
 
