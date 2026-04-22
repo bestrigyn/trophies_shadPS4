@@ -1,7 +1,7 @@
 # 🏆 shadPS4 Trophies Database
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/shadps4-emu/shadPS4/main/dist/shadPS4.png" width="100" alt="shadPS4 Logo">
+  <img src="https://raw.githubusercontent.com/shadps4-emu/shadPS4/main/dist/img/shadPS4.png" width="100" alt="shadPS4 Logo">
 </p>
 
 ## 📌 О проекте
