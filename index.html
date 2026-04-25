@@ -9,26 +9,15 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
 
-        /* Логотип на чистом HTML/CSS */
         .logo-b {
-            width: 40px;
-            height: 40px;
-            background: var(--ps-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: 24px;
-            font-weight: 900;
-            color: #fff;
-            box-shadow: 0 0 15px rgba(0, 170, 255, 0.4);
-            border: 2px solid var(--accent);
+            width: 40px; height: 40px; background: var(--ps-blue);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; font-size: 24px; font-weight: 900; color: #fff;
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.4); border: 2px solid var(--accent);
             user-select: none;
         }
 
         .header { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
-        
-        /* Верхняя панель с лого и навигацией */
         .top-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px; }
         .nav-links { display: flex; gap: 15px; align-items: center; }
         
@@ -50,6 +39,7 @@
         .top-player-card { display: flex; justify-content: space-between; padding: 12px; background: #1a1a1a; border-radius: 8px; margin-bottom: 8px; border: 1px solid #222; }
         .t-card { display: flex; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 5px; opacity: 0.5; border: 1px solid transparent; }
         .t-card.won { opacity: 1; border-color: var(--ps-blue); }
+        .t-img { width: 50px; height: 50px; margin-right: 15px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -58,7 +48,6 @@
     <div class="header">
         <div class="top-nav-row">
             <div class="logo-b">B</div>
-            
             <div class="nav-links">
                 <a onclick="showSection('profile')" class="nav-link active" id="nav_profile">Профиль</a>
                 <a onclick="showSection('ach')" class="nav-link" id="nav_ach">Достижения</a>
@@ -95,10 +84,10 @@
         </div>
 
         <div id="settingsPanel" class="settings-box">
-            <h4 style="margin-top:0">Настройки профиля</h4>
+            <h4 style="margin-top:0">Настройки</h4>
             <div style="margin-bottom: 15px;">
                 <input type="text" id="newNickInput" style="background:#222; border:1px solid #444; color:#fff; padding:8px; border-radius:4px; width:60%;" placeholder="Новый ник...">
-                <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">Сохранить</button>
+                <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">ОК</button>
             </div>
             <div style="border-top:1px solid #222; padding-top:10px;">
                 <small style="color:#666">Пол:</small>
@@ -125,7 +114,7 @@
     <div id="contentArea">
         <div class="banner" id="mainBanner" onclick="toggleTrophies()">
             <div style="position:relative; z-index:2;">
-                <h2 id="gameTitle" style="margin:0">Данные не загружены</h2>
+                <h2 id="gameTitle" style="margin:0">Загрузите данные...</h2>
                 <div style="width:100%; height:8px; background:#222; border-radius:4px; margin:10px 0;">
                     <div id="progressFill" style="height:100%; background:var(--accent); width:0%; transition:1s;"></div>
                 </div>
@@ -155,7 +144,6 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // Исправлено: закрываем всё лишнее при переключении
     window.showSection = (name) => {
         const sections = ['profileSection', 'achievementsSection', 'topSection', 'contentArea', 'downloadArea', 'settingsPanel'];
         sections.forEach(s => document.getElementById(s).style.display = 'none');
@@ -179,22 +167,33 @@
         const s = document.getElementById('settingsPanel');
         const t = document.getElementById('topSection');
         if (s.style.display === 'none' || s.style.display === '') {
-            if(t) t.style.display = 'none'; // Убираем ТОП, если открываем настройки
+            if(t) t.style.display = 'none';
             s.style.display = 'block';
         } else s.style.display = 'none';
     };
 
-    async function loadTopPlayers() {
-        const list = document.getElementById('topPlayersList');
-        list.innerHTML = "Загрузка игроков...";
-        const q = query(collection(db, "users"), limit(20));
-        const snap = await getDocs(q);
-        let h = '';
-        snap.forEach(d => {
-            const data = d.data();
-            h += `<div class="top-player-card"><b>${data.customName || data.displayName || 'Игрок'}</b> <span>${data.game || '-'} (${data.perc || 0}%)</span></div>`;
-        });
-        list.innerHTML = h || "Никого нет";
+    const openDB = () => new Promise(res => {
+        const req = indexedDB.open("TrophyCache", 1);
+        req.onupgradeneeded = () => req.result.createObjectStore("images");
+        req.onsuccess = () => res(req.result);
+    });
+
+    async function loadData() {
+        if(!userUid) return;
+        const snap = await getDoc(doc(db, "users", userUid));
+        if (snap.exists()) {
+            const d = snap.data();
+            const idb = await openDB();
+            const cachedIcon = await new Promise(r => {
+                const req = idb.transaction("images").objectStore("images").get("main_icon");
+                req.onsuccess = () => r(req.result);
+            });
+            const cachedHtml = await new Promise(r => {
+                const req = idb.transaction("images").objectStore("images").get("html_list");
+                req.onsuccess = () => r(req.result);
+            });
+            updateUI(d.game, d.perc, d.stat, cachedIcon, cachedHtml);
+        }
     }
 
     onAuthStateChanged(auth, async (user) => {
@@ -207,18 +206,71 @@
             const snap = await getDoc(doc(db, "users", user.uid));
             if (snap.exists()) {
                 const d = snap.data();
-                if (d.customName) document.getElementById('userName').innerText = d.customName;
+                if (d.customName) {
+                    document.getElementById('userName').innerText = d.customName;
+                    document.getElementById('newNickInput').value = d.customName;
+                }
                 if (d.gender) updateGenderUI(d.gender);
             }
+            loadData(); // ИСПРАВЛЕНО: Запуск чтения данных при входе
+        } else {
+            document.getElementById('userName').innerText = "Гость";
         }
     });
+
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file || !userUid) return;
+        const zip = await JSZip.loadAsync(file);
+        let xmlData = null, icons = {};
+        for (let path in zip.files) {
+            const name = path.split('/').pop().toUpperCase();
+            if (name === 'TROP.XML') xmlData = await zip.files[path].async("string");
+            if (name.endsWith('.PNG')) icons[name] = "data:image/png;base64," + await zip.files[path].async("base64");
+        }
+        if (xmlData) {
+            const xml = new DOMParser().parseFromString(xmlData, "text/xml");
+            const trophies = xml.querySelectorAll('trophy');
+            let earned = 0, html = '';
+            trophies.forEach(t => {
+                const won = t.getAttribute('unlockstate') === "true";
+                if (won) earned++;
+                const img = icons['TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG'] || "";
+                html += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div class="t-info"><b>${t.querySelector('name').textContent}</b><small>${t.querySelector('detail').textContent}</small></div></div>`;
+            });
+            const p = Math.round((earned / trophies.length) * 100);
+            const gameName = xml.querySelector('title-name')?.textContent || "Game";
+            const mainIcon = icons['TROP000.PNG'] || "";
+            
+            const idb = await openDB();
+            idb.transaction("images", "readwrite").objectStore("images").put(mainIcon, "main_icon");
+            idb.transaction("images", "readwrite").objectStore("images").put(html, "html_list");
+            
+            await setDoc(doc(db, "users", userUid), { game: gameName, perc: p, stat: `${earned}/${trophies.length}` }, { merge: true });
+            updateUI(gameName, p, `${earned}/${trophies.length}`, mainIcon, html);
+        }
+    });
+
+    function updateUI(title, p, st, img, html) {
+        document.getElementById('gameTitle').innerText = title || "Загрузите данные...";
+        document.getElementById('progressFill').style.width = (p || 0) + "%";
+        document.getElementById('statText').innerText = `${p || 0}% — ${st || '0/0'}`;
+        if (img) document.getElementById('mainBanner').style.backgroundImage = `url(${img})`;
+        document.getElementById('trophyList').innerHTML = html || "";
+        if (p === 100) document.getElementById('ach_plat').classList.add('active');
+    }
+
+    window.toggleTrophies = () => {
+        const l = document.getElementById('trophyList');
+        l.style.display = l.style.display === 'flex' ? 'none' : 'flex';
+    };
 
     window.updateNickname = async () => {
         const val = document.getElementById('newNickInput').value;
         if (val && userUid) {
             await setDoc(doc(db, "users", userUid), { customName: val }, { merge: true });
             document.getElementById('userName').innerText = val;
-            document.getElementById('settingsPanel').style.display = 'none';
+            toggleSettings();
         }
     };
 
@@ -234,12 +286,21 @@
         document.getElementById('check_woman').style.display = g === 'woman' ? 'block' : 'none';
     }
 
+    async function loadTopPlayers() {
+        const list = document.getElementById('topPlayersList');
+        list.innerHTML = "Загрузка...";
+        const q = query(collection(db, "users"), limit(20));
+        const snap = await getDocs(q);
+        let h = '';
+        snap.forEach(d => {
+            const data = d.data();
+            h += `<div class="top-player-card"><b>${data.customName || data.displayName || 'Игрок'}</b> <span>${data.game || '-'} (${data.perc || 0}%)</span></div>`;
+        });
+        list.innerHTML = h || "Никого нет";
+    }
+
     window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
     window.handleLogout = () => signOut(auth).then(() => location.reload());
-    window.toggleTrophies = () => {
-        const l = document.getElementById('trophyList');
-        l.style.display = l.style.display === 'flex' ? 'none' : 'flex';
-    };
 </script>
 </body>
 </html>
