@@ -2,14 +2,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Trophy Tracker Pro - Fixed Edition</title>
+    <title>Trophy Tracker Pro - Ultra Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #121212; --green: #4caf50; --accent: #00aaff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
 
-        /* Логотип B в левом углу */
+        /* Тот самый логотип B */
         .logo-b {
             width: 40px; height: 40px; background: var(--ps-blue);
             display: flex; align-items: center; justify-content: center;
@@ -19,25 +19,32 @@
         }
 
         .header { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #222; margin-bottom: 20px; }
-        .top-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px; }
-        .nav-links { display: flex; gap: 15px; align-items: center; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .nav-links-wrap { display: flex; gap: 15px; align-items: center; }
         
         .nav-link { color: #888; text-decoration: none; font-size: 13px; text-transform: uppercase; font-weight: bold; cursor: pointer; }
         .nav-link:hover { color: #fff; }
         .nav-link.active { color: var(--green); }
 
-        .top-btn { background: #333; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; }
-        .exit-btn { background: #d32f2f; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .top-btn { background: #333; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+        .exit-btn { background: #d32f2f; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
 
         .section-box { display: none; background: #111; padding: 20px; border-radius: 10px; margin-top: 15px; border: 1px solid #333; }
+        .ach-row { display: flex; gap: 10px; flex-wrap: wrap; }
         .ach-item { background: #1a1a1a; padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px; color: #888; border: 1px solid #333; font-size: 14px; }
         .ach-item.active { border-color: #ffd700; color: #fff; background: #221f10; }
 
         .settings-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
-        .banner { background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--accent); cursor: pointer; position: relative; overflow: hidden; margin-top: 20px; background-size: cover; background-position: center; min-height: 100px; }
+        .link-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid #333; color: #555; }
+        .link-badge.active { border-color: var(--green); color: var(--green); }
+
+        .banner { background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--accent); cursor: pointer; position: relative; overflow: hidden; margin-top: 20px; background-size: cover; background-position: center; }
         .banner::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1; }
+        .bar { width: 100%; height: 10px; background: #222; border-radius: 5px; margin: 10px 0; position: relative; z-index: 2; }
+        .fill { height: 100%; background: var(--accent); width: 0%; transition: 1s; }
         
         .top-player-card { display: flex; justify-content: space-between; padding: 12px; background: #1a1a1a; border-radius: 8px; margin-bottom: 8px; border: 1px solid #222; }
+
         .t-card { display: flex; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 8px; margin-bottom: 5px; opacity: 0.5; border: 1px solid transparent; }
         .t-card.won { opacity: 1; border-color: var(--ps-blue); }
         .t-img { width: 50px; height: 50px; margin-right: 15px; border-radius: 4px; }
@@ -47,9 +54,9 @@
 
 <div class="container">
     <div class="header">
-        <div class="top-nav-row">
+        <div class="nav-bar">
             <div class="logo-b">B</div>
-            <div class="nav-links">
+            <div class="nav-links-wrap">
                 <a onclick="showSection('profile')" class="nav-link active" id="nav_profile">Профиль</a>
                 <a onclick="showSection('ach')" class="nav-link" id="nav_ach">Достижения</a>
                 <button class="top-btn" onclick="showSection('top')">ТОП</button>
@@ -60,7 +67,8 @@
         <div id="profileSection">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <span id="userName" style="color:var(--green); font-size:28px; font-weight:bold;">Гость</span>
+                    <span style="font-size:30px;">🏆</span>
+                    <span id="userName" style="color:var(--green); font-size:28px; font-weight:bold; margin-left:10px;">Гость</span>
                 </div>
                 <div>
                     <button id="authBtn" class="top-btn" style="background:var(--ps-blue)" onclick="handleAuthClick()">Войти</button>
@@ -71,7 +79,7 @@
 
         <div id="achievementsSection" class="section-box">
             <h3 style="margin-top:0">Достижения сайта</h3>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="ach-row">
                 <div id="ach_plat" class="ach-item"><span>🏆</span> Первая платина</div>
                 <div id="ach_form" class="ach-item"><span>📝</span> Анкета заполнена</div>
             </div>
@@ -80,49 +88,62 @@
 
         <div id="topSection" class="section-box">
             <h3 style="margin-top:0; color:var(--accent)">ТОП Игроков</h3>
-            <div id="topPlayersList">Загрузка...</div>
+            <div id="topPlayersList">
+                <div style="color:#666">Загрузка данных...</div>
+            </div>
             <button class="top-btn" style="margin-top:15px;" onclick="showSection('profile')">← Назад</button>
         </div>
 
         <div id="settingsPanel" class="settings-box">
             <h4 style="margin-top:0">Настройки</h4>
+            
             <div style="margin-bottom: 15px;">
-                <input type="text" id="newNickInput" style="background:#222; border:1px solid #444; color:#fff; padding:8px; border-radius:4px; width:60%;" placeholder="Новый ник...">
+                <input type="text" id="newNickInput" style="background:#222; border:1px solid #444; color:#fff; padding:8px; border-radius:4px; width:70%;" placeholder="Изменить ник...">
                 <button class="top-btn" style="background:var(--ps-blue)" onclick="updateNickname()">ОК</button>
             </div>
-            <div style="border-top:1px solid #222; padding-top:10px;">
-                <small style="color:#666">Пол:</small>
-                <div style="display:flex; gap:15px; margin-top:10px;">
-                    <div onclick="setGender('man')" style="cursor:pointer; position:relative;">
-                        <img src="human%20gender/man.png" onerror="this.src='trophies_shadPS4/human%20gender/man.png'" style="width:40px; border-radius:4px;">
-                        <span id="check_man" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--green); border-radius:50%; width:14px; height:14px; font-size:10px; text-align:center;">✓</span>
+
+            <div style="margin-bottom: 15px; border-top: 1px solid #222; padding-top: 10px;">
+                <small style="color:#666; text-transform: uppercase; font-size: 10px;">Выберите пол:</small>
+                <div style="display: flex; gap: 20px; margin-top: 10px; align-items: center;">
+                    <div onclick="setGender('man')" style="cursor:pointer; text-align:center; position: relative;">
+                        <img src="human%20gender/man.png" onerror="this.src='trophies_shadPS4/human%20gender/man.png'" style="width:40px; height:40px; display:block; border-radius: 4px; border: 1px solid #333;">
+                        <span id="check_man" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--green); color:white; border-radius:50%; width:15px; height:15px; font-size:10px; line-height:15px; text-align:center;">✓</span>
+                        <small style="font-size:10px; color:#888;">Муж</small>
                     </div>
-                    <div onclick="setGender('woman')" style="cursor:pointer; position:relative;">
-                        <img src="human%20gender/woman.png" onerror="this.src='trophies_shadPS4/human%20gender/woman.png'" style="width:40px; border-radius:4px;">
-                        <span id="check_woman" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--green); border-radius:50%; width:14px; height:14px; font-size:10px; text-align:center;">✓</span>
+                    <div onclick="setGender('woman')" style="cursor:pointer; text-align:center; position: relative;">
+                        <img src="human%20gender/woman.png" onerror="this.src='trophies_shadPS4/human%20gender/woman.png'" style="width:40px; height:40px; display:block; border-radius: 4px; border: 1px solid #333;">
+                        <span id="check_woman" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--green); color:white; border-radius:50%; width:15px; height:15px; font-size:10px; line-height:15px; text-align:center;">✓</span>
+                        <small style="font-size:10px; color:#888;">Жен</small>
                     </div>
                 </div>
             </div>
+
+            <div style="border-top: 1px solid #222; padding-top:10px;">
+                <small style="color:#666">ПОДКЛЮЧЕНИЯ:</small><br>
+                <div id="link_google" class="link-badge" style="margin-top:5px;">GOOGLE AUTH</div>
+            </div>
+            <button class="top-btn" style="margin-top:15px; background:#444;" onclick="toggleSettings()">Закрыть</button>
         </div>
     </div>
 
-    <div id="downloadArea" style="text-align:center; margin-bottom:20px;">
-        <label class="top-btn" style="background: var(--green); padding: 10px 20px; display:inline-block; cursor:pointer;">
+    <div style="text-align: center; margin-bottom: 20px;" id="downloadArea">
+        <a href="https://github.com/bestrigyn/trophies_shadPS4_assistant/releases/tag/ShadPS4_Assistant" target="_blank" class="top-btn" style="background:var(--ps-blue); padding: 10px 20px; text-decoration:none; display:inline-block; margin-bottom:10px;">
+            📥 Скачать ShadPS4 Assistant
+        </a><br>
+        <label class="top-btn" style="background: var(--green); padding: 10px 20px; display:inline-block;">
             📁 Выбрать Update.zip <input type="file" id="fileInput" accept=".zip" hidden>
         </label>
     </div>
 
     <div id="contentArea">
-        <div class="banner" id="mainBanner" onclick="toggleTrophies()">
+        <div class="banner" id="mainBanner">
             <div style="position:relative; z-index:2;">
                 <h2 id="gameTitle" style="margin:0">Загрузите данные...</h2>
-                <div style="width:100%; height:8px; background:#222; border-radius:4px; margin:10px 0;">
-                    <div id="progressFill" style="height:100%; background:var(--accent); width:0%; transition:1s;"></div>
-                </div>
-                <span id="statText" style="font-size:14px; opacity:0.8">0% — 0/0</span>
+                <div class="bar"><div id="progressFill" class="fill"></div></div>
+                <span id="statText" style="font-size:14px; opacity:0.8">0% — Трофеи: 0/0</span>
             </div>
         </div>
-        <div id="trophyList" style="margin-top:20px; display:none; flex-direction:column; gap:8px;"></div>
+        <div id="trophyList" style="margin-top:20px; display:none; flex-direction:column; gap:10px;"></div>
     </div>
 </div>
 
@@ -145,7 +166,6 @@
     const db = getFirestore(app);
     let userUid = null;
 
-    // Исправлено: переключение без наложения
     window.showSection = (name) => {
         const sections = ['profileSection', 'achievementsSection', 'topSection', 'contentArea', 'downloadArea', 'settingsPanel'];
         sections.forEach(s => {
@@ -165,20 +185,87 @@
             document.getElementById('nav_ach').classList.add('active');
         } else if(name === 'top') {
             document.getElementById('topSection').style.display = 'block';
-            loadTopPlayers();
+            loadTopPlayers(); 
         }
     };
 
-    window.toggleSettings = () => {
-        const s = document.getElementById('settingsPanel');
-        const t = document.getElementById('topSection');
-        if (s.style.display === 'none' || s.style.display === '') {
-            if(t) t.style.display = 'none';
-            s.style.display = 'block';
-        } else s.style.display = 'none';
+    async function loadTopPlayers() {
+        const listDiv = document.getElementById('topPlayersList');
+        listDiv.innerHTML = '<div style="color:#666">Загрузка игроков из базы...</div>';
+        try {
+            const q = query(collection(db, "users"), limit(50));
+            const snap = await getDocs(q);
+            let html = '';
+            let i = 1;
+            snap.forEach(doc => {
+                const d = doc.data();
+                const name = d.customName || d.displayName || "Анонимный игрок";
+                const gameInfo = d.game ? `${d.game} (${d.perc || 0}%)` : "Данные не загружены";
+                html += `<div class="top-player-card"><span><b>${i}.</b> ${name}</span><span style="color:#888; font-size:12px;">${gameInfo}</span></div>`;
+                i++;
+            });
+            listDiv.innerHTML = html || '<div style="color:#666">Игроков пока нет.</div>';
+        } catch(e) { listDiv.innerHTML = 'Ошибка загрузки ТОПа.'; }
+    }
+
+    window.setGender = async (gender) => {
+        if (!userUid) return;
+        await setDoc(doc(db, "users", userUid), { gender: gender }, { merge: true });
+        updateGenderUI(gender);
     };
 
-    // Работа с локальной базой картинок
+    function updateGenderUI(gender) {
+        document.getElementById('check_man').style.display = gender === 'man' ? 'block' : 'none';
+        document.getElementById('check_woman').style.display = gender === 'woman' ? 'block' : 'none';
+    }
+
+    window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
+    window.handleLogout = () => signOut(auth).then(() => location.reload());
+
+    window.toggleSettings = () => {
+        const settings = document.getElementById('settingsPanel');
+        const topSection = document.getElementById('topSection');
+        if (settings.style.display === 'none' || settings.style.display === '') {
+            if (topSection) topSection.style.display = 'none'; 
+            settings.style.display = 'block';
+        } else {
+            settings.style.display = 'none';
+        }
+    };
+
+    window.updateNickname = async () => {
+        const val = document.getElementById('newNickInput').value;
+        if (val && userUid) {
+            await setDoc(doc(db, "users", userUid), { customName: val }, { merge: true });
+            document.getElementById('userName').innerText = val;
+            toggleSettings();
+        }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            userUid = user.uid;
+            document.getElementById('authBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+            document.getElementById('link_google').classList.add('active');
+            document.getElementById('ach_form').classList.add('active');
+            document.getElementById('userName').innerText = user.displayName;
+
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                const d = snap.data();
+                if (d.customName) {
+                    document.getElementById('userName').innerText = d.customName;
+                    document.getElementById('newNickInput').value = d.customName;
+                }
+                if (d.gender) updateGenderUI(d.gender);
+            }
+            loadData();
+        } else {
+            document.getElementById('userName').innerText = "Гость";
+        }
+    });
+
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
@@ -186,7 +273,6 @@
     });
 
     async function loadData() {
-        if(!userUid) return;
         const snap = await getDoc(doc(db, "users", userUid));
         if (snap.exists()) {
             const d = snap.data();
@@ -203,29 +289,6 @@
         }
     }
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            userUid = user.uid;
-            document.getElementById('authBtn').style.display = 'none';
-            document.getElementById('logoutBtn').style.display = 'inline-block';
-            document.getElementById('userName').innerText = user.displayName;
-
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists()) {
-                const d = snap.data();
-                if (d.customName) {
-                    document.getElementById('userName').innerText = d.customName;
-                    document.getElementById('newNickInput').value = d.customName;
-                }
-                if (d.gender) updateGenderUI(d.gender);
-            }
-            loadData(); // ИСПРАВЛЕНО: Теперь данные читаются при входе
-        } else {
-            document.getElementById('userName').innerText = "Гость";
-        }
-    });
-
-    // Чтение ZIP
     document.getElementById('fileInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file || !userUid) return;
@@ -244,71 +307,33 @@
                 const won = t.getAttribute('unlockstate') === "true";
                 if (won) earned++;
                 const img = icons['TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG'] || "";
-                html += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div><b>${t.querySelector('name').textContent}</b><br><small>${t.querySelector('detail').textContent}</small></div></div>`;
+                html += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div class="t-info"><b>${t.querySelector('name').textContent}</b><small>${t.querySelector('detail').textContent}</small></div></div>`;
             });
             const p = Math.round((earned / trophies.length) * 100);
+            const st = `${earned}/${trophies.length}`;
             const gameName = xml.querySelector('title-name')?.textContent || "Game";
             const mainIcon = icons['TROP000.PNG'] || "";
-            
             const idb = await openDB();
             idb.transaction("images", "readwrite").objectStore("images").put(mainIcon, "main_icon");
             idb.transaction("images", "readwrite").objectStore("images").put(html, "html_list");
-            
-            await setDoc(doc(db, "users", userUid), { game: gameName, perc: p, stat: `${earned}/${trophies.length}` }, { merge: true });
-            updateUI(gameName, p, `${earned}/${trophies.length}`, mainIcon, html);
+            await setDoc(doc(db, "users", userUid), { game: gameName, perc: p, stat: st }, { merge: true });
+            updateUI(gameName, p, st, mainIcon, html);
         }
     });
 
     function updateUI(title, p, st, img, html) {
         document.getElementById('gameTitle').innerText = title || "Загрузите данные...";
         document.getElementById('progressFill').style.width = (p || 0) + "%";
-        document.getElementById('statText').innerText = `${p || 0}% — ${st || '0/0'}`;
+        document.getElementById('statText').innerText = `${p || 0}% — Трофеи: ${st || '0/0'}`;
         if (img) document.getElementById('mainBanner').style.backgroundImage = `url(${img})`;
         document.getElementById('trophyList').innerHTML = html || "";
         if (p === 100) document.getElementById('ach_plat').classList.add('active');
     }
 
-    window.toggleTrophies = () => {
-        const l = document.getElementById('trophyList');
-        l.style.display = l.style.display === 'flex' ? 'none' : 'flex';
+    document.getElementById('mainBanner').onclick = () => {
+        const list = document.getElementById('trophyList');
+        list.style.display = list.style.display === 'flex' ? 'none' : 'flex';
     };
-
-    window.updateNickname = async () => {
-        const val = document.getElementById('newNickInput').value;
-        if (val && userUid) {
-            await setDoc(doc(db, "users", userUid), { customName: val }, { merge: true });
-            document.getElementById('userName').innerText = val;
-            toggleSettings();
-        }
-    };
-
-    window.setGender = async (g) => {
-        if(userUid) {
-            await setDoc(doc(db, "users", userUid), { gender: g }, { merge: true });
-            updateGenderUI(g);
-        }
-    };
-
-    function updateGenderUI(g) {
-        document.getElementById('check_man').style.display = g === 'man' ? 'block' : 'none';
-        document.getElementById('check_woman').style.display = g === 'woman' ? 'block' : 'none';
-    }
-
-    async function loadTopPlayers() {
-        const list = document.getElementById('topPlayersList');
-        list.innerHTML = "Загрузка...";
-        const q = query(collection(db, "users"), limit(20));
-        const snap = await getDocs(q);
-        let h = '';
-        snap.forEach(d => {
-            const data = d.data();
-            h += `<div class="top-player-card"><b>${data.customName || data.displayName || 'Игрок'}</b> <span>${data.game || '-'} (${data.perc || 0}%)</span></div>`;
-        });
-        list.innerHTML = h || "Никого нет";
-    }
-
-    window.handleAuthClick = () => signInWithPopup(auth, new GoogleAuthProvider());
-    window.handleLogout = () => signOut(auth).then(() => location.reload());
 </script>
 </body>
 </html>
