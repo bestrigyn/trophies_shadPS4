@@ -2,13 +2,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Trophy Tracker Pro - Bestrigyn Edition</title>
+    <title>Trophy Tracker Pro - Fixed Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root { --ps-blue: #00439c; --bg: #0a0a0a; --card: #121212; --green: #4caf50; --accent: #00aaff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
 
+        /* Логотип B в левом углу */
         .logo-b {
             width: 40px; height: 40px; background: var(--ps-blue);
             display: flex; align-items: center; justify-content: center;
@@ -33,7 +34,7 @@
         .ach-item.active { border-color: #ffd700; color: #fff; background: #221f10; }
 
         .settings-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
-        .banner { background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--accent); cursor: pointer; position: relative; overflow: hidden; margin-top: 20px; background-size: cover; background-position: center; }
+        .banner { background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--accent); cursor: pointer; position: relative; overflow: hidden; margin-top: 20px; background-size: cover; background-position: center; min-height: 100px; }
         .banner::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1; }
         
         .top-player-card { display: flex; justify-content: space-between; padding: 12px; background: #1a1a1a; border-radius: 8px; margin-bottom: 8px; border: 1px solid #222; }
@@ -144,9 +145,14 @@
     const db = getFirestore(app);
     let userUid = null;
 
+    // Исправлено: переключение без наложения
     window.showSection = (name) => {
         const sections = ['profileSection', 'achievementsSection', 'topSection', 'contentArea', 'downloadArea', 'settingsPanel'];
-        sections.forEach(s => document.getElementById(s).style.display = 'none');
+        sections.forEach(s => {
+            const el = document.getElementById(s);
+            if(el) el.style.display = 'none';
+        });
+        
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
         if(name === 'profile') {
@@ -172,6 +178,7 @@
         } else s.style.display = 'none';
     };
 
+    // Работа с локальной базой картинок
     const openDB = () => new Promise(res => {
         const req = indexedDB.open("TrophyCache", 1);
         req.onupgradeneeded = () => req.result.createObjectStore("images");
@@ -212,12 +219,13 @@
                 }
                 if (d.gender) updateGenderUI(d.gender);
             }
-            loadData(); // ИСПРАВЛЕНО: Запуск чтения данных при входе
+            loadData(); // ИСПРАВЛЕНО: Теперь данные читаются при входе
         } else {
             document.getElementById('userName').innerText = "Гость";
         }
     });
 
+    // Чтение ZIP
     document.getElementById('fileInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file || !userUid) return;
@@ -236,7 +244,7 @@
                 const won = t.getAttribute('unlockstate') === "true";
                 if (won) earned++;
                 const img = icons['TROP' + String(t.getAttribute('id')).padStart(3, '0') + '.PNG'] || "";
-                html += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div class="t-info"><b>${t.querySelector('name').textContent}</b><small>${t.querySelector('detail').textContent}</small></div></div>`;
+                html += `<div class="t-card ${won ? 'won' : ''}"><img src="${img}" class="t-img"><div><b>${t.querySelector('name').textContent}</b><br><small>${t.querySelector('detail').textContent}</small></div></div>`;
             });
             const p = Math.round((earned / trophies.length) * 100);
             const gameName = xml.querySelector('title-name')?.textContent || "Game";
